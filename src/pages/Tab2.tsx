@@ -65,7 +65,7 @@ const Tab2: React.FC = () => {
         const {device, consumerTransport} = await createDeviceAndTransports(socketInit);
 
         handleNewProducer(socketInit, consumerTransport, device);
-        handleClosedProducer(socketInit);
+        handleClosedProducer(socketInit, consumerTransport, device);
         setSocket(socketInit);
       } catch (error) {
         console.log((error as any).message);
@@ -342,18 +342,24 @@ const Tab2: React.FC = () => {
     }
   }
 
-  function handleClosedProducer(socket: Socket) {
+  function handleClosedProducer(socket: Socket, consumerTransport: Transport, device: Device) {
     socket.on(ServerEvents.PRODUCER_CLOSED, (data: ProducingDTO) => {
-      const { producerId } = data;
-      setProducingStreams((prev) => {
-        const {
-          [producerId]: {},
-          ...rest
-        } = prev;
-        return rest;
-      });
+      consumeAllProducers(socket, consumerTransport, device)
+      .catch((err) => console.log("Error re-consuming all producers on new producer rvent", err.message))
     });
   }
+  // function handleClosedProducer(socket: Socket) {
+  //   socket.on(ServerEvents.PRODUCER_CLOSED, (data: ProducingDTO) => {
+  //     const { producerId } = data;
+  //     setProducingStreams((prev) => {
+  //       const {
+  //         [producerId]: {},
+  //         ...rest
+  //       } = prev;
+  //       return rest;
+  //     });
+  //   });
+  // }
 
   function attachStreamToProducerVideoElements(
     producerObject: IProducingStreams
