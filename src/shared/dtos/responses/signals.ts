@@ -13,3 +13,18 @@ export interface CreatedConsumerDTO {
     rtpParameters: MediaSoup.types.RtpParameters;
     kind: MediaSoup.types.MediaKind;
 }
+export interface IProducerUser {
+    videoProducerId: string;
+    audioProducerId: string;
+    userId: string;
+    name?: string;
+}
+export interface IProducersDTO {
+    [socketId: string]: IProducerUser
+}
+
+export interface ToggleProducerStateDTO {
+    room: string;
+    action: "mute" | "unMute" | "turnOffVideo" | "turnOnVideo";
+    socketId?: string;
+}

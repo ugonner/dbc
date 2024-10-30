@@ -1,4 +1,5 @@
 import MediaSoup from "mediasoup-client";
+import { IProfile } from "../../interfaces/user";
 
 export interface JoinRoomDTO {
     userId: string;
@@ -25,6 +26,9 @@ export interface CreateProducerDTO{
     kind: MediaSoup.types.MediaKind;
     transportId: string;
     room: string;
+    mediaKind: "audio" | "video";
+    isAudioTurnedOff: boolean;
+    isVideoTurnedOff: boolean;
 }
 
 export interface CreateConsumerDTO {
@@ -37,4 +41,15 @@ export interface CreateConsumerDTO {
 export interface ProducingDTO{
     producerId: string;
     userId: string;
+}
+
+export interface PublishProducerDTO{
+    producerId: string;
+    userId: string;
+    room: string;
+    socketId?: string;
+}
+
+export interface RequestPermissionDTO extends IProfile {
+    producerId?: string;
 }
