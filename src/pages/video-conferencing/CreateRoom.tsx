@@ -36,7 +36,6 @@ export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
   ) => {
     const { name, value } = (evt as FormEvent<HTMLIonInputElement>)
       .currentTarget;
-    alert("name " + name + " VALUE " + value);
     setRoom({ ...room, [name]: value });
   };
 

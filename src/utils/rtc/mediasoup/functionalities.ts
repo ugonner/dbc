@@ -5,6 +5,7 @@ import { IProducers } from "../../../shared/interfaces/socket-user";
 import { IApiResponse } from "../../../shared/dtos/responses/api-response";
 import { APIBaseURL, getData } from "../../../api/base";
 import { IRoom } from "../../../shared/interfaces/room";
+import { JoinRoomDTO } from "../../../shared/dtos/requests/signals";
 export function toggleAudio(userMediaStream: MediaStream,  setAudioTurnedOff: SetStateAction<Dispatch<boolean>>){
     userMediaStream.getAudioTracks()[0].enabled = !(userMediaStream.getAudioTracks()[0].enabled)
     setAudioTurnedOff((!userMediaStream.getAudioTracks()[0].enabled as boolean & Dispatch<boolean>))
@@ -15,15 +16,19 @@ export function toggleVIdeo(userMediaStream: MediaStream, setVideoTurnedOff: Set
   setVideoTurnedOff((!userMediaStream.getVideoTracks()[0].enabled as boolean & Dispatch<boolean>))
 }
 
-export async function joinRoom(socket: Socket, room: string, userId: string) {
+export async function joinRoom(socket: Socket, dto: JoinRoomDTO) {
     return await new Promise((resolve) => {
-      socket.emit(ClientEvents.JOIN_ROOM, { room, userId }, resolve);
+      socket.emit(ClientEvents.JOIN_ROOM, dto, resolve);
     });
   }
 
   export function stopMediaTracks(userMediaStream: MediaStream) {
-    const tracks = userMediaStream?.getTracks();
-    tracks.forEach((track) => track.stop())
+    try{
+      const tracks = userMediaStream?.getTracks();
+      tracks?.forEach((track) => track.stop())
+    }catch(error){
+      console.log( "Error stopping media tracks",(error as Error).message)
+    }
   }
 
   export async function getRoomAdmins(socket: Socket, room: string): Promise<IProducers | undefined> {

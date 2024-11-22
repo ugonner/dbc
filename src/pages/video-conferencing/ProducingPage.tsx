@@ -53,14 +53,14 @@ export const ProducingPage = (props: IProducingPageProps) => {
           <IonItem>
             <IonButton
               onClick={async () =>
-                toggleAudio(userMediaStream, setAudioTurnedOff)
+                toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff)
               }
             >
               Toggle Audio
             </IonButton>
 
             <IonButton
-              onClick={() => toggleVIdeo(userMediaStream, setVideoTurnedOff)}
+              onClick={() => toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff)}
             >
               Toggle Video
             </IonButton>

@@ -8,10 +8,10 @@ export interface IUser {
 
 export interface IProfile {
     id: number;
-    userId?: string;
-    firstName?: string;
-    lastName?: string;
-    avatar?: string;
+    userId: string;
+    firstName: string;
+    lastName: string;
+    avatar: string;
     gender?: string;
 }
 export interface IAuthUserProfile extends IAuthUser {

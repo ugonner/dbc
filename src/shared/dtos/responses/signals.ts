@@ -1,5 +1,6 @@
 import MediaSoup from 'mediasoup-client';
-
+import { UserActions } from '../../interfaces/socket-user';
+export type UserMediaToggleActionType = "mute" | "unMute" | "turnOffVideo" | "turnOnVideo";
 export interface CreatedTransportDTO {
     id: string;
     iceParameters: MediaSoup.types.IceParameters;
@@ -25,6 +26,12 @@ export interface IProducersDTO {
 
 export interface ToggleProducerStateDTO {
     room: string;
-    action: "mute" | "unMute" | "turnOffVideo" | "turnOnVideo";
+    action: UserMediaToggleActionType;
+    socketId?: string;
+}
+
+export interface UserReactionsDTO {
+    room: string;
+    action: UserActions;
     socketId?: string;
 }

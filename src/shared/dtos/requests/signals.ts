@@ -4,6 +4,8 @@ import { IProfile } from "../../interfaces/user";
 export interface JoinRoomDTO {
     userId: string;
     room: string;
+    userName: string;
+    avatar: string;
 }
 
 export interface getRouterRTCCapabilitiesDTO{

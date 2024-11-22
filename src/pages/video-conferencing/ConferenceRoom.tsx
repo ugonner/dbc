@@ -1,11 +1,16 @@
 import {
+  IonActionSheet,
+  IonAvatar,
   IonButton,
   IonCol,
   IonContent,
   IonGrid,
   IonHeader,
   IonItem,
+  IonLabel,
+  IonModal,
   IonPage,
+  IonPopover,
   IonRow,
   IonTitle,
   IonToolbar,
@@ -24,9 +29,14 @@ import {
   Transport,
 } from "mediasoup-client/lib/types";
 import { ClientEvents, BroadcastEvents } from "../../shared/enums/events.enum";
-import { IProducers, IProducerUser } from "../../shared/interfaces/socket-user";
+import {
+  IProducers,
+  IProducerUser,
+  UserActions,
+} from "../../shared/interfaces/socket-user";
 import { CallVideo } from "../../components/video/CallVideo";
 import {
+  JoinRoomDTO,
   ProducingDTO,
   RequestPermissionDTO,
 } from "../../shared/dtos/requests/signals";
@@ -41,6 +51,7 @@ import {
 } from "../../utils/rtc/mediasoup/create-device-transport";
 import {
   canJoinRoom,
+  isRoomAdmin,
   joinRoom,
   stopMediaTracks,
   toggleAudio,
@@ -56,10 +67,15 @@ import {
   startProducing,
 } from "../../utils/rtc/mediasoup/producing";
 import { ConsumingVideo } from "../../components/video/ConsumingVideo";
-import { ToggleProducerStateDTO } from "../../shared/dtos/responses/signals";
+import {
+  ToggleProducerStateDTO,
+  UserReactionsDTO,
+} from "../../shared/dtos/responses/signals";
 import { useModalContextStore } from "../../utils/contexts/overlays/ModalContextProvider";
 import { ProducingPage } from "./ProducingPage";
 import { ComponentModal } from "../../utils/components/modals/ComponentModal";
+import { RoomParticipants } from "../../components/conference-room/RoomParticipants";
+import { userReactionsEmojis } from "../../shared/DATASETS/user-reaction-emojis";
 
 const ConferenceRoom: React.FC = () => {
   const navParams = useParams<{ roomId: string }>();
@@ -69,12 +85,25 @@ const ConferenceRoom: React.FC = () => {
   const storedUser = localStorage.getItem("user");
   const user: IAuthUserProfile = storedUser ? JSON.parse(storedUser) : {};
 
-  const userId = user.userId || "6c06b8";
+  const {userId, firstName: userName, avatar} = (user.profile || {}) as IProfile;
   const [producingStreams, setProducingStreams] = useState(
     [] as IProducerUser[]
   );
-  const [presentAlert, dismissAlert] = useIonAlert();
-  const [presentToast] = useIonToast();
+
+  const [lastUserReation, setLastUserReaction] = useState<UserActions>();
+
+  const [lastUser, setLastUser] = useState<IProducerUser>();
+  const [openUsersModal, setOpenUsersModal] = useState(false);
+  const [openLastUserModal, setOpenLastUserModal] = useState(false);
+  const [openJoinRequestPopover, setOpenJoinRequestPopover] = useState(false);
+  const [requestToJoinUserData, setRequestToJoinUserData] = useState<JoinRoomDTO>();
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [openReactionsActionSheet, setOpenReactionsActionSheet] =
+    useState(false);
+
+  
+   const [presentToast] = useIonToast();
+
   const {
     socket,
     setSocket,
@@ -102,22 +131,21 @@ const ConferenceRoom: React.FC = () => {
         const socketInit = io(`${socketIOBaseURL}`);
         setSocket(socketInit as Socket & Dispatch<Socket>);
         socketInit.on(BroadcastEvents.JOIN_REQUEST_ACCEPTED, async () => {
-          console.log("fired accepted accepted");
           await setUp(socketInit);
           await setShowModalText("");
+        });
+        socketInit.on(BroadcastEvents.JOIN_REQUEST_REJECTEDD, async () => {
+          await setShowModalText("");
+          presentToast("Your request to join was rejected ", 3000);
+          await navigateOutOfRoom();
         });
 
         socketInit.on(
           BroadcastEvents.REQUEST_TO_JOIN,
-          (data: IProfile, callBack) => {
-            displayAdmitUserAlert(socketInit, data);
-          }
-        );
-
-        socketInit.on(
-          BroadcastEvents.REQUEST_TO_PUBLISH,
-          (data: RequestPermissionDTO) => {
-            displayAdmitUserAlert(socketInit, data);
+          (data: JoinRoomDTO, callBack) => {
+            //displayAdmitUserAlert(socketInit, data);
+            setRequestToJoinUserData(data);
+            setOpenJoinRequestPopover(true);
           }
         );
 
@@ -132,7 +160,7 @@ const ConferenceRoom: React.FC = () => {
 
   async function setUp(socketInit: Socket) {
     setShowModalText("");
-    await joinRoom(socketInit, roomId, userId);
+    await joinRoom(socketInit, {room: roomId, userId, userName, avatar});
     const device = await createDevice(socketInit, roomId);
     const consumerTransport = await createConsumerTransport(
       socketInit,
@@ -154,13 +182,19 @@ const ConferenceRoom: React.FC = () => {
       BroadcastEvents.PRODUCER_PRODUCING,
       BroadcastEvents.PRODUCER_CLOSED,
       BroadcastEvents.TOGGLE_PRODUCER_STATE,
+      BroadcastEvents.USER_REACTION,
     ].forEach((eventName) => {
-      addConsumeProducerEventHandler(
-        eventName,
-        socketInit,
-        consumerTransport,
-        device
-      );
+      if (eventName === BroadcastEvents.PRODUCER_CLOSED)
+        addReRenderProducers(socketInit, eventName, "remove");
+      else if (eventName === BroadcastEvents.USER_REACTION)
+        addReRenderProducers(socketInit, eventName, "rerender");
+      else
+        addConsumeProducerEventHandler(
+          eventName,
+          socketInit,
+          consumerTransport,
+          device
+        );
     });
 
     await startProducing(producerTransport, userMediaStream as MediaStream);
@@ -172,32 +206,6 @@ const ConferenceRoom: React.FC = () => {
     );
   }
 
-  function displayAdmitUserAlert(
-    socketInit: Socket,
-    data: RequestPermissionDTO
-  ) {
-    presentAlert({
-      header: "Someone wants to join",
-      message: `${data.avatar} ${
-        data.firstName ? data.firstName : ""
-      } wants to be admitted, Please verify user before admitting `,
-      buttons: [
-        {
-          text: "Admit",
-          handler: () => {
-            socketInit.emit(BroadcastEvents.JOIN_REQUEST_ACCEPTED, data);
-            dismissAlert();
-          },
-        },
-        {
-          text: "Reject",
-          handler: () => {
-            dismissAlert(); // TODO - Send Rejection event
-          },
-        },
-      ],
-    });
-  }
 
   async function consumeAllAndSetProducingStreams(
     socketInit: Socket,
@@ -260,10 +268,56 @@ const ConferenceRoom: React.FC = () => {
     }
   }
 
+  async function addReRenderProducers(
+    socket: Socket,
+    eventName: BroadcastEvents,
+    action: "add" | "remove" | "rerender"
+  ) {
+    try {
+      socket.on(eventName, (data: IProducerUser) => {
+        if (!data || !data?.socketId) return;
+        const { socketId } = data;
+
+        const roomProducers = producingStreamsRef.current || {};
+        const producerUser = {
+          ...(roomProducers[`${socketId}`] || {}),
+          ...data,
+        };
+        roomProducers[`${socketId}`] = producerUser;
+        if (eventName === BroadcastEvents.USER_REACTION) {
+          setLastUser(producerUser);
+          setLastUserReaction(
+            (data as IProducerUser & { action: UserActions }).action
+          );
+          setOpenLastUserModal(true);
+          autoDismissLastUserModal();
+        }
+        if (action === "remove") delete roomProducers[`${socketId}`];
+        producingStreamsRef.current = roomProducers;
+        const producingArr = Object.values(roomProducers);
+        setProducingStreams(producingArr);
+      });
+    } catch (error) {
+      console.log((error as Error).message);
+      presentToast((error as Error).message, 3000);
+    }
+  }
+
+  function autoDismissLastUserModal() {
+    try {
+      const timeout = setTimeout(() => {
+        setOpenLastUserModal(false);
+        clearTimeout(timeout);
+      }, 10000);
+    } catch (error) {
+      console.log((error as Error).message);
+    }
+  }
+
   async function requestToJoin(socket: Socket) {
     try {
       const joinRes: IApiResponse<Boolean> = await new Promise((resolve) => {
-        socket.emit(BroadcastEvents.REQUEST_TO_JOIN, { room: roomId }, resolve);
+        socket.emit(BroadcastEvents.REQUEST_TO_JOIN, { room: roomId, userName, avatar, userId }, resolve);
       });
       if (!/success/.test(joinRes.status)) {
         await presentToast(`${joinRes.message}`), 300;
@@ -275,9 +329,9 @@ const ConferenceRoom: React.FC = () => {
   }
 
   async function navigateOutOfRoom() {
-    socket.disconnect();
-    setSocket({} as any);
-    stopMediaTracks(userMediaStream);
+    socket?.disconnect();
+    setSocket(undefined);
+    stopMediaTracks(userMediaStream as MediaStream);
     setUserMediaStream({} as MediaStream & Dispatch<MediaStream>);
     navigation.push("/conference/rooms");
   }
@@ -324,8 +378,8 @@ const ConferenceRoom: React.FC = () => {
                   room: roomId,
                   action: audioTurnedOff ? "unMute" : "mute",
                 };
-                socket.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleAudio(userMediaStream, setAudioTurnedOff);
+                socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+                toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff);
               }}
             >
               Toggle Audio
@@ -337,11 +391,40 @@ const ConferenceRoom: React.FC = () => {
                   room: roomId,
                   action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
                 };
-                socket.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleVIdeo(userMediaStream, setVideoTurnedOff);
+                socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+                toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff);
               }}
             >
               Toggle Video
+            </IonButton>
+
+            <IonButton
+              onClick={async () => {
+                try {
+                  const screenShareStream =
+                    await navigator.mediaDevices.getDisplayMedia({
+                      video: true,
+                    });
+                  const videoTrack = screenShareStream.getVideoTracks()[0];
+                  await producerTransport?.produce({ track: videoTrack });
+                  setUserMediaStream(screenShareStream);
+                } catch (error) {
+                  presentToast((error as Error).message, 3000);
+                  console.log(
+                    "Error sharing screen ",
+                    (error as Error).message
+                  );
+                }
+              }}
+            >
+              Share Screen
+            </IonButton>
+            <IonButton
+              onClick={() =>
+                setOpenReactionsActionSheet(!openReactionsActionSheet)
+              }
+            >
+              React
             </IonButton>
 
             <IonButton slot="end" onClick={navigateOutOfRoom}>
@@ -349,16 +432,107 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
           </IonItem>
         </IonToolbar>
+
         <ComponentModal
           modalBody={
             <ProducingPage
               joinHandler={async () => {
-                canJoin ? await setUp(socket) : await requestToJoin(socket);
+                canJoin
+                  ? await setUp(socket as Socket)
+                  : await requestToJoin(socket as Socket);
               }}
             />
           }
           modalTitle="Waiting Room"
           showModalText={`room-${roomId}`}
+        />
+
+        <IonPopover
+        isOpen={openJoinRequestPopover}
+        >
+          <div>
+            <IonItem>
+              <IonAvatar slot="start">
+              <img src={requestToJoinUserData?.avatar} alt={`${requestToJoinUserData?.userName}'s image`} />
+              </IonAvatar>
+              <IonLabel>
+                
+            <h4>Someone wants to join</h4>
+            <p>{`${requestToJoinUserData?.userName} want's to join`}</p>
+           
+              </IonLabel>
+            </IonItem>
+            <div>
+              <IonItem>
+              <IonButton slot="end" role="destructive" onClick={
+                () => {
+                  socket?.emit(BroadcastEvents.JOIN_REQUEST_ACCEPTED, requestToJoinUserData);
+                  setOpenJoinRequestPopover(false);
+                  setRequestToJoinUserData(undefined)
+                }
+              }>Admit</IonButton>
+              <IonButton slot="end" role="destructive" onClick={
+                () => {
+                  socket?.emit(BroadcastEvents.JOIN_REQUEST_REJECTEDD, requestToJoinUserData);
+                  setOpenJoinRequestPopover(false);
+                  setRequestToJoinUserData(undefined)
+                }
+              }>Reject</IonButton>
+              </IonItem>
+            </div>
+          </div>
+        </IonPopover>
+
+        <IonPopover
+          isOpen={openLastUserModal}
+          onDidDismiss={() => setOpenLastUserModal(false)}
+          title={lastUserReation}
+        >
+          <RoomParticipants
+            roomParticipants={[lastUser as IProducerUser]}
+            socket={socket as Socket}
+            room={roomId}
+            reactionType={lastUserReation}
+            isAdmin={isAdmin}
+          />
+        </IonPopover>
+
+        <IonModal
+          isOpen={openUsersModal}
+          onDidDismiss={() => setOpenUsersModal(false)}
+          backdropDismiss={true}
+        >
+          <RoomParticipants
+            roomParticipants={producingStreams}
+            socket={socket as Socket}
+            room={roomId}
+            isAdmin={isAdmin}
+          />
+        </IonModal>
+
+        <IonActionSheet
+          isOpen={openReactionsActionSheet}
+          onDidDismiss={() => setOpenReactionsActionSheet}
+          header={`${socket ? "socket is true" : "no socket"}`}
+          buttons={Object.keys(userReactionsEmojis).map((reaction) => ({
+            icon: userReactionsEmojis[reaction][0],
+            text: reaction,
+            handler: async () => {
+              const data: UserReactionsDTO = {
+                room: roomId,
+                action: reaction as UserActions,
+              };
+              try {
+                socket?.emit(BroadcastEvents.USER_REACTION, data);
+                await new Promise((resolve, reject) =>
+                  socket?.emit(BroadcastEvents.USER_REACTION, data, resolve)
+                );
+                setOpenReactionsActionSheet(false);
+              } catch (error) {
+                console.log((error as Error).message);
+              }
+            },
+          }))}
         />
       </IonContent>
     </IonPage>
