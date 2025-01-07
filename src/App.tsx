@@ -1,4 +1,4 @@
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route } from "react-router-dom";
 import {
   IonApp,
   IonIcon,
@@ -7,29 +7,26 @@ import {
   IonTabBar,
   IonTabButton,
   IonTabs,
-  setupIonicReact
-} from '@ionic/react';
-import { IonReactRouter } from '@ionic/react-router';
-import { ellipse, square, triangle } from 'ionicons/icons';
-import Tab1 from './pages/Tab1';
-import Tab2 from './pages/Tab2';
-import Tab3 from './pages/Tab3';
+  setupIonicReact,
+} from "@ionic/react";
+import { IonReactRouter } from "@ionic/react-router";
+import { ellipse, phonePortrait, square, triangle } from "ionicons/icons";
 
 /* Core CSS required for Ionic components to work properly */
-import '@ionic/react/css/core.css';
+import "@ionic/react/css/core.css";
 
 /* Basic CSS for apps built with Ionic */
-import '@ionic/react/css/normalize.css';
-import '@ionic/react/css/structure.css';
-import '@ionic/react/css/typography.css';
+import "@ionic/react/css/normalize.css";
+import "@ionic/react/css/structure.css";
+import "@ionic/react/css/typography.css";
 
 /* Optional CSS utils that can be commented out */
-import '@ionic/react/css/padding.css';
-import '@ionic/react/css/float-elements.css';
-import '@ionic/react/css/text-alignment.css';
-import '@ionic/react/css/text-transformation.css';
-import '@ionic/react/css/flex-utils.css';
-import '@ionic/react/css/display.css';
+import "@ionic/react/css/padding.css";
+import "@ionic/react/css/float-elements.css";
+import "@ionic/react/css/text-alignment.css";
+import "@ionic/react/css/text-transformation.css";
+import "@ionic/react/css/flex-utils.css";
+import "@ionic/react/css/display.css";
 
 /**
  * Ionic Dark Mode
@@ -40,48 +37,88 @@ import '@ionic/react/css/display.css';
 
 /* import '@ionic/react/css/palettes/dark.always.css'; */
 /* import '@ionic/react/css/palettes/dark.class.css'; */
-import '@ionic/react/css/palettes/dark.system.css';
+import "@ionic/react/css/palettes/dark.system.css";
 
 /* Theme variables */
-import './theme/variables.css';
+import "./theme/variables.css";
+import { RTCToolsProvider } from "./contexts/rtc";
+import Rooms from "./pages/video-conferencing/Rooms";
+import { ProducingPage } from "./pages/video-conferencing/ProducingPage";
+import ConferenceRoom from "./pages/video-conferencing/ConferenceRoom";
+import { ModalContextProvider } from "./utils/contexts/overlays/ModalContextProvider";
+import { AsyncHelperProvider, useAsyncHelpersContext } from "./contexts/async-helpers";
+import { ComponentModal } from "./utils/components/modals/ComponentModal";
+import { Loader } from "./components/Loader";
+import { AdminBoard } from "./pages/admin/AdminBoard";
+import { Chats } from "./pages/talkable/Chats";
+import { TalkableHome } from "./pages/talkable/TalkableHome";
+import { ChatRoomPage } from "./pages/talkable/ChatRoomPage";
+import { TalkableContextProvider } from "./contexts/talkables/talkable";
 
 setupIonicReact();
 
 const App: React.FC = () => (
+
   <IonApp>
-    <IonReactRouter>
-      <IonTabs>
-        <IonRouterOutlet>
-          <Route exact path="/tab1">
-            <Tab1 />
-          </Route>
-          <Route exact path="/tab2">
-            <Tab2 />
-          </Route>
-          <Route path="/tab3">
-            <Tab3 />
-          </Route>
-          <Route exact path="/">
-            <Redirect to="/tab1" />
-          </Route>
-        </IonRouterOutlet>
-        <IonTabBar slot="bottom">
-          <IonTabButton tab="tab1" href="/tab1">
-            <IonIcon aria-hidden="true" icon={triangle} />
-            <IonLabel>Tab 1</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab2" href="/tab2">
-            <IonIcon aria-hidden="true" icon={ellipse} />
-            <IonLabel>Tab 2</IonLabel>
-          </IonTabButton>
-          <IonTabButton tab="tab3" href="/tab3">
-            <IonIcon aria-hidden="true" icon={square} />
-            <IonLabel>Tab 3</IonLabel>
-          </IonTabButton>
-        </IonTabBar>
-      </IonTabs>
-    </IonReactRouter>
+    <RTCToolsProvider>
+      <ModalContextProvider>
+        <AsyncHelperProvider>
+          <IonReactRouter>
+              
+            <IonTabs>
+              <IonRouterOutlet>
+               <Route
+               exact
+               path={"/talkable"}
+               component={TalkableHome}
+               />
+                
+                <Route
+                  exact 
+                  path={"/talkable/chat-room/:chatId"}
+                  component={ChatRoomPage}
+                />
+
+                <Route 
+                exact 
+                path="/hub"
+                component={TalkableHome}
+                  />
+
+                <Route path={"/:tab(conference)/rooms"} component={Rooms} />
+                
+                <Route
+                  path={"/:tab(conference)/conference-room/:roomId"}
+                  component={ConferenceRoom}
+                />
+
+                <Route exact path="/">
+                  <Redirect to="/talkable" />
+                </Route>
+                <Route path={"/admin"} component={AdminBoard}></Route>
+              </IonRouterOutlet>
+              <IonTabBar slot="bottom">
+                <IonTabButton tab="talkable" href="/talkable">
+                  <IonIcon aria-hidden="true" icon={phonePortrait} />
+                  <IonLabel>Talkable</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="hub" href="/hub">
+                  <IonIcon aria-hidden="true" icon={ellipse} />
+                  <IonLabel>Hub</IonLabel>
+                </IonTabButton>
+                <IonTabButton tab="conference" href="/conference/rooms">
+                  <IonIcon aria-hidden="true" icon={square} />
+                  <IonLabel>Conference</IonLabel>
+                </IonTabButton>
+              </IonTabBar>
+            </IonTabs>
+          </IonReactRouter>
+            
+        </AsyncHelperProvider>
+      </ModalContextProvider>
+    </RTCToolsProvider>
   </IonApp>
+
 );
 
 export default App;
