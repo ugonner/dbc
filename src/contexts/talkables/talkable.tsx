@@ -283,10 +283,18 @@ export const TalkableContextProvider = ({
   
         
         recognizer.on("result", async (message) => {
+         console.log("message status", message.event)
           const resultText =
             message.event === "result" ? message.result.text : "";
           resolve(resultText)    
           });
+          recognizer.on("partialresult", (message) => {
+            
+            console.log("On PARTIAL FIRED");
+            if(message.event === "partialresult"){
+              console.log("partial result", message.result.partial)
+            }
+          })
           recognizer.on("error", (error) => reject(error) )
           
           let offset = 0;
@@ -298,16 +306,17 @@ export const TalkableContextProvider = ({
             if(offset <= wholeLength){
               if(offset > wholeLength) recognizer.retrieveFinalResult();
 
-              let   subArr = channelData.subarray(offset, sampleSize);
+              let   subArr = channelData.subarray(offset, (offset + sampleSize));
               
               if(offset === wholeLength){
                 subArr = channelData.subarray(offset);
               }
+              console.log("subArr", subArr.length);
               
-              const newBuffer = audioContext.createBuffer(1, subArr.length, audioSampleRate);
+              const newBuffer = audioContext.createBuffer(1, sampleSize, audioSampleRate);
               newBuffer.getChannelData(0).set(subArr);
               recognizer.acceptWaveform(newBuffer);
-              if(offset === wholeLength) recognizer.retrieveFinalResult();
+              //if(offset === wholeLength) recognizer.retrieveFinalResult();
               offset += sampleSize;
               
             }
