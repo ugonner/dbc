@@ -1,8 +1,8 @@
 
-const baseIp = `https://192.168.43.219`;
-const baseWsIp = "wss://192.168.43.219"
-//const baseIp = "https://localhost";
-//const baseWsIp = "wss://localhost";
+//const baseIp = `https://192.168.43.219`;
+//const baseWsIp = "wss://192.168.43.219"
+const baseIp = "https://localhost";
+const baseWsIp = "wss://localhost";
 
 
 

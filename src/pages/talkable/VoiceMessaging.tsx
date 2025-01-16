@@ -14,12 +14,17 @@ import {
 } from "@ionic/react";
 import { closeCircle } from "ionicons/icons";
 import { useTalkableContextStore } from "../../contexts/talkables/talkable";
-import { IChat, IChatMessage, IChatUser } from "../../shared/interfaces/talkables/chat";
+import { IChat, IChatMessage, IChatUser, IMessageAttachment } from "../../shared/interfaces/talkables/chat";
 import { TalkableChatEvents } from "../../shared/enums/talkables/chat-event.enum";
-
+import audioBufferToWav from "audiobuffer-to-wav";
+import { APIBaseURL } from "../../api/base";
+import { IApiResponse } from "../../shared/dtos/responses/api-response";
+export const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+        
 export interface IVoiceMessagingProps {
   chat: IChat;
 }
+export const audioSampleRate = 16000;
 
 export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
   const audioSampleRate = 16000;
@@ -42,19 +47,47 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
   const mediaSourceRef = useRef<MediaStreamAudioSourceNode | null>();
   const captionsArrRef = useRef<string[]>([]);
 
+  
+  const uploadAudioData = async (): Promise<IMessageAttachment> => {
+    
+    if(!audioContextRef || !audioContextRef.current) audioContextRef.current = new (AudioContext || (window as any).webkitAudioContext)();
+    const audioBuffer = audioContextRef.current.createBuffer(1, audioFloatArrDataRef.current.length, audioSampleRate);
+    audioBuffer.getChannelData(0).set(audioFloatArrDataRef.current);
+    
+    const audioArr: ArrayBuffer = audioBufferToWav(audioBuffer);
+    const audioBlob = new Blob([audioArr], {type: "audio/wav"});
+    const formData = new FormData();
+    formData.append("file", audioBlob);
+    const res = await fetch(`${APIBaseURL}/file-upload`, {
+      method: "post",
+      body: formData,
+    });
+    const resBody: IApiResponse<IMessageAttachment> = await res.json();
+    if(!res.ok) throw resBody;
+    return resBody.data as IMessageAttachment;
+
+  } 
+
+  
+
   const sendVoiceCaptionsMessage = async () => {
     try{
+      let attachment: IMessageAttachment;
+      attachment = await uploadAudioData();
       const msg: IChatMessage = {
         chatId: chat.chatId,
         message: captionsArrRef.current.join("\r\n"),
         sender: userRef.current as IChatUser,
         receiver: chat?.users.find((usr) => usr.userId !== userRef.current?.userId) as IChatUser,
         isViewed: false,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        attachment
+
       };
       await new Promise((resolve, reject) => {
         socketRef.current?.emit(TalkableChatEvents.CHAT_MESSAGE, msg, resolve);
       });
+
       captionsArrRef.current = [];
       
 
@@ -96,6 +129,7 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
         try {
           audioFloatArrDataRef.current = [...audioFloatArrDataRef.current, evt.data];
           const floatArr: number[] = evt.data;
+          audioFloatArrDataRef.current = [...audioFloatArrDataRef.current, ...floatArr]
           const audioBufferData = audioContextRef.current?.createBuffer(
             1,
             floatArr.length,
@@ -180,7 +214,6 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
   useEffect(() => {
     const loadRecognixer = async () => {
       try {
-        const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
         const sampleRate = audioSampleRate;
 
         const modell = await vosk.createModel(modelPath);

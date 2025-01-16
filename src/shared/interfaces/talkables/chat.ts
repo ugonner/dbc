@@ -18,6 +18,11 @@ export interface IChat {
     lastMessage?: IChatMessage
 }
 
+export interface IMessageAttachment {
+    attachmentUrl: string;
+    attachmentType: "audio" | "image" | "video";
+}
+
 export interface IChatMessage {
     chatId: string;
     message?: string;
@@ -27,4 +32,5 @@ export interface IChatMessage {
     createdAt: string
     isAdmin?: boolean;
     socketId?: string;
+    attachment?: IMessageAttachment;
 }

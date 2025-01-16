@@ -16,10 +16,21 @@ import {
 import { io, Socket } from "socket.io-client";
 import { TextToSpeech, TTSOptions } from "@capacitor-community/text-to-speech";
 import { TalkableChatEvents } from "../../shared/enums/talkables/chat-event.enum";
-import { CommunicationModeEnum, LocalStorageKeys } from "../../shared/enums/talkables/talkables.enum";
-import { TalkableSocketBaseURL } from "../../api/base";
+import {
+  CommunicationModeEnum,
+  LocalStorageKeys,
+} from "../../shared/enums/talkables/talkables.enum";
+import { APIBaseURL, TalkableSocketBaseURL } from "../../api/base";
 import { useHistory } from "react-router";
 import { useIonToast } from "@ionic/react";
+import { Model } from "vosk-browser";
+import * as vosk from "vosk-browser";
+import {
+  audioSampleRate,
+  modelPath,
+} from "../../pages/talkable/VoiceMessaging";
+import * as wav from "wav";
+import * as bufferToStream from "buffer-to-stream";
 
 export interface IStatusOverlayOptions {
   openOverlay: boolean;
@@ -32,8 +43,8 @@ export interface ICommunicationMode {
 }
 
 export enum TalkablePage {
-    CHATS = "chats",
-    CHAT_ROOM = "chat_room"
+  CHATS = "chats",
+  CHAT_ROOM = "chat_room",
 }
 export interface IChatEntities {
   chats: IChat[];
@@ -62,7 +73,11 @@ export interface ITalkableProps {
   setTalkablePage: Dispatch<SetStateAction<TalkablePage>>;
   chatRoomMessages: IChatMessage[];
   setChatRoomMessges: Dispatch<SetStateAction<IChatMessage[]>>;
-  navigateTalkableChatPages: (options: {to: TalkablePage, chatRoomId?: string }) => void;
+  navigateTalkableChatPages: (options: {
+    to: TalkablePage;
+    chatRoomId?: string;
+  }) => void;
+  transcribeAudioURL: (audioUrl: string) => Promise<string>;
 }
 
 const TalkableContext: React.Context<ITalkableProps> = createContext(
@@ -78,7 +93,6 @@ export const TalkableContextProvider = ({
   const chatMessagesRef = useRef<IChatMessage[]>([]);
   const history = useHistory();
 
-  
   const initChatEntities = async (): Promise<IChatEntities> => {
     let chatEntities: IChatEntities;
     const localChatsData = localStorage.getItem(LocalStorageKeys.CHATS);
@@ -106,7 +120,7 @@ export const TalkableContextProvider = ({
     };
     return chatEntities;
   };
-  
+
   const [chats, setChats] = useState<IChat[]>([]);
   const [chatMessages, setChatMessages] = useState<IChatMessage[]>([]);
   const currentChatRef = useRef<string>("");
@@ -119,16 +133,14 @@ export const TalkableContextProvider = ({
   const [newChat, setNewChat] = useState<IChat | undefined>();
   const userRef = useRef<IChatUser>();
 
-
   const attachSocketEvents = async () => {
     if (!socketRef.current?.connected) {
-        const chatEntities = await initChatEntities();
-        chatsRef.current = chatEntities.chats;
-        chatMessagesRef.current = chatEntities.chatMessages;
-        userRef.current = chatEntities.chatUser;
-        setChats(chatsRef.current);
-        setChatMessages(chatMessagesRef.current);
-
+      const chatEntities = await initChatEntities();
+      chatsRef.current = chatEntities.chats;
+      chatMessagesRef.current = chatEntities.chatMessages;
+      userRef.current = chatEntities.chatUser;
+      setChats(chatsRef.current);
+      setChatMessages(chatMessagesRef.current);
 
       const socketInit: Socket = await new Promise((resolve, reject) => {
         const socket: Socket = io(`${TalkableSocketBaseURL}`);
@@ -147,9 +159,14 @@ export const TalkableContextProvider = ({
           console.log("CURRENNT CHAT ID", currentChatRef.current);
 
           data.createdAt = new Date(Date.now()).toISOString();
-          if (talkablePage === TalkablePage.CHAT_ROOM && data.chatId === currentChatRef.current) {
+          if (
+            talkablePage === TalkablePage.CHAT_ROOM &&
+            data.chatId === currentChatRef.current
+          ) {
             data.isViewed = true;
-            if (userRef.current?.communicationMode === CommunicationModeEnum.VOICE) {
+            if (
+              userRef.current?.communicationMode === CommunicationModeEnum.VOICE
+            ) {
               TextToSpeech.speak({
                 ...ttsOptionsRef.current,
                 text: data.message || "",
@@ -161,9 +178,13 @@ export const TalkableContextProvider = ({
           chatMessagesRef.current.push(data);
           setChatMessages(chatMessagesRef.current);
           if (data.chatId === currentChatRef.current) {
-            setChatRoomMessges(chatMessagesRef.current.filter((msg) => msg.chatId === data.chatId ))
+            setChatRoomMessges(
+              chatMessagesRef.current.filter(
+                (msg) => msg.chatId === data.chatId
+              )
+            );
           }
-          
+
           localStorage.setItem(
             LocalStorageKeys.CHAT_MESSAGES,
             JSON.stringify(chatMessagesRef.current)
@@ -172,7 +193,7 @@ export const TalkableContextProvider = ({
           const roomChatIndex = chatsRef.current.findIndex(
             (cht) => cht.chatId === data.chatId
           );
-          
+
           if (roomChatIndex !== -1)
             chatsRef.current[roomChatIndex].lastMessage = data;
           setChats(chatsRef.current);
@@ -202,8 +223,11 @@ export const TalkableContextProvider = ({
           });
           //navigate / show chat room
           currentChatRef.current = data.chatId;
-          navigateTalkableChatPages({to: TalkablePage.CHAT_ROOM, roomChatId: data.chatId})
-           // history.push(`/talkable/chat-room/${data.chatId}`);
+          navigateTalkableChatPages({
+            to: TalkablePage.CHAT_ROOM,
+            roomChatId: data.chatId,
+          });
+          // history.push(`/talkable/chat-room/${data.chatId}`);
         }
       );
 
@@ -232,17 +256,96 @@ export const TalkableContextProvider = ({
     }
   };
 
+  const transcribeAudioURL = async (audioUrl: string): Promise<string> => {
+    let transcript = "";
+    try {
+      const res = await fetch(`${audioUrl}`);
+      if (!res.ok) throw new Error("Error fetching audio file");
+      const arrBuffer: ArrayBuffer  = await res.arrayBuffer();
+      let audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      await audioContext.audioWorklet.addModule(
+        "/worklet/PCMBatch-processor.js"
+      );
+      let audioWorkletNode = new AudioWorkletNode(
+        audioContext,
+        "pcm-batch-processor"
+      );
+
+      let audioBufferSource = await audioContext.createBufferSource();
+      const audioBuffer = await audioContext.decodeAudioData(arrBuffer);
+      const channelData = audioBuffer.getChannelData(0);
+      audioBufferSource.buffer = audioBuffer;
+
+      const model = await vosk.createModel(modelPath);
+      model.setLogLevel(1);
+      transcript = await new Promise((resolve, reject) => {
+        const recognizer = new model.KaldiRecognizer(audioSampleRate);
   
-  const navigateTalkableChatPages = (options: {to: TalkablePage, roomChatId?: string}) => {
-    if(options.to === TalkablePage.CHAT_ROOM){
+        
+        recognizer.on("result", async (message) => {
+          const resultText =
+            message.event === "result" ? message.result.text : "";
+          resolve(resultText)    
+          });
+          recognizer.on("error", (error) => reject(error) )
+          
+          let offset = 0;
+          const sampleSize = 1024;
+          const reminantSampleSize = channelData.length % sampleSize;
+          const wholeLength = channelData.length - reminantSampleSize;
+          (audioWorkletNode as AudioWorkletNode).port.onmessage = async (evt) => {
+            console.log("Event fired offset", offset);
+            if(offset <= wholeLength){
+              if(offset > wholeLength) recognizer.retrieveFinalResult();
+
+              let   subArr = channelData.subarray(offset, sampleSize);
+              
+              if(offset === wholeLength){
+                subArr = channelData.subarray(offset);
+              }
+              
+              const newBuffer = audioContext.createBuffer(1, subArr.length, audioSampleRate);
+              newBuffer.getChannelData(0).set(subArr);
+              recognizer.acceptWaveform(newBuffer);
+              if(offset === wholeLength) recognizer.retrieveFinalResult();
+              offset += sampleSize;
+              
+            }
+          }
+          audioBufferSource.connect(audioWorkletNode).connect(audioContext.destination);            
+          audioBufferSource.start();
+        })
+        audioBufferSource.stop();
+        audioBufferSource.disconnect();
+        audioWorkletNode.disconnect();
+        if(audioContext.state !== "closed") audioContext.close();
+        audioBufferSource = null as unknown as AudioBufferSourceNode;
+        audioWorkletNode = null as unknown as AudioWorkletNode;
+        audioContext = null as unknown as AudioContext;
+        model.terminate();
+        return transcript;
+    } catch (error) {
+      console.log("Error transcribing audio url", (error as Error).message);
+    }
+    return transcript;
+  };
+
+  const navigateTalkableChatPages = (options: {
+    to: TalkablePage;
+    roomChatId?: string;
+  }) => {
+    if (options.to === TalkablePage.CHAT_ROOM) {
       currentChatRef.current = options.roomChatId || currentChatRef.current;
-      if(!currentChatRef.current) return presentToast("Unable to open chat, Please reload", 3000);
-      setChatRoomMessges(chatMessages.filter((cht) => cht.chatId === currentChatRef.current));
+      if (!currentChatRef.current)
+        return presentToast("Unable to open chat, Please reload", 3000);
+      setChatRoomMessges(
+        chatMessages.filter((cht) => cht.chatId === currentChatRef.current)
+      );
     }
     setTalkablePage(options.to);
-  }
+  };
 
-  const [talkablePage, setTalkablePage] = useState(TalkablePage.CHATS)
+  const [talkablePage, setTalkablePage] = useState(TalkablePage.CHATS);
   const [chatRoomMessages, setChatRoomMessges] = useState<IChatMessage[]>([]);
 
   const initTalkableContextProps: ITalkableProps = {
@@ -265,7 +368,8 @@ export const TalkableContextProvider = ({
     setTalkablePage,
     chatRoomMessages,
     setChatRoomMessges,
-    navigateTalkableChatPages
+    navigateTalkableChatPages,
+    transcribeAudioURL
   };
 
   return (
