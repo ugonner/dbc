@@ -756,6 +756,8 @@ const ConferenceRoom: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen style={{minHeight: "60%"}}>
+      <div style={{position: "absolute", left: "-9999px"}} aria-hidden={false} aria-live="assertive">{ariaAssertiveNotification}</div>
+      <div style={{position: "absolute", left: "-9998px"}} aria-hidden={false} aria-live="polite">{ariaPoliteNotification}</div>
         <div>
           {roomContext?.isSharing ? (
             <div>

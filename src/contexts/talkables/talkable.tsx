@@ -263,19 +263,15 @@ export const TalkableContextProvider = ({
       if (!res.ok) throw new Error("Error fetching audio file");
       const arrBuffer: ArrayBuffer  = await res.arrayBuffer();
       let audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      await audioContext.audioWorklet.addModule(
-        "/worklet/PCMBatch-processor.js"
-      );
-      let audioWorkletNode = new AudioWorkletNode(
-        audioContext,
-        "pcm-batch-processor"
-      );
-
-      let audioBufferSource = await audioContext.createBufferSource();
       const audioBuffer = await audioContext.decodeAudioData(arrBuffer);
       const channelData = audioBuffer.getChannelData(0);
-      audioBufferSource.buffer = audioBuffer;
-
+     // const newBuffer = audioContext.createBuffer(1, channelData.length, audioSampleRate);
+     const newBuffer = new AudioBuffer({
+      numberOfChannels: 1,
+      length: channelData.length,
+      sampleRate: audioSampleRate
+     })
+      newBuffer.getChannelData(0).set(channelData);
       const model = await vosk.createModel(modelPath);
       model.setLogLevel(1);
       transcript = await new Promise((resolve, reject) => {
@@ -288,48 +284,15 @@ export const TalkableContextProvider = ({
             message.event === "result" ? message.result.text : "";
           resolve(resultText)    
           });
-          recognizer.on("partialresult", (message) => {
-            
-            console.log("On PARTIAL FIRED");
-            if(message.event === "partialresult"){
-              console.log("partial result", message.result.partial)
-            }
-          })
+          
           recognizer.on("error", (error) => reject(error) )
           
-          let offset = 0;
-          const sampleSize = 1024;
-          const reminantSampleSize = channelData.length % sampleSize;
-          const wholeLength = channelData.length - reminantSampleSize;
-          (audioWorkletNode as AudioWorkletNode).port.onmessage = async (evt) => {
-            console.log("Event fired offset", offset);
-            if(offset <= wholeLength){
-              if(offset > wholeLength) recognizer.retrieveFinalResult();
-
-              let   subArr = channelData.subarray(offset, (offset + sampleSize));
-              
-              if(offset === wholeLength){
-                subArr = channelData.subarray(offset);
-              }
-              console.log("subArr", subArr.length);
-              
-              const newBuffer = audioContext.createBuffer(1, sampleSize, audioSampleRate);
-              newBuffer.getChannelData(0).set(subArr);
-              recognizer.acceptWaveform(newBuffer);
-              //if(offset === wholeLength) recognizer.retrieveFinalResult();
-              offset += sampleSize;
-              
-            }
-          }
-          audioBufferSource.connect(audioWorkletNode).connect(audioContext.destination);            
-          audioBufferSource.start();
+          recognizer.acceptWaveform(audioBuffer);
+          
         })
-        audioBufferSource.stop();
-        audioBufferSource.disconnect();
-        audioWorkletNode.disconnect();
+
+        //-- clean up
         if(audioContext.state !== "closed") audioContext.close();
-        audioBufferSource = null as unknown as AudioBufferSourceNode;
-        audioWorkletNode = null as unknown as AudioWorkletNode;
         audioContext = null as unknown as AudioContext;
         model.terminate();
         return transcript;

@@ -89,6 +89,7 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
       });
 
       captionsArrRef.current = [];
+      audioFloatArrDataRef.current = [];
       
 
     }catch(error){
@@ -315,7 +316,7 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
 
       <IonButton
       fill="clear"
-      onClick={() => captionsArrRef.current = []}
+      onClick={() => {captionsArrRef.current = []; audioFloatArrDataRef.current = [];}}
       >
         Clear voice
       </IonButton>

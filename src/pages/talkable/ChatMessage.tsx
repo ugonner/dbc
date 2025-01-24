@@ -2,11 +2,8 @@ import {
   IonButton,
   IonIcon,
   IonItem,
-  IonLabel,
   IonList,
   IonPopover,
-  IonText,
-  useIonAlert,
 } from "@ionic/react";
 import { IChatMessage } from "../../shared/interfaces/talkables/chat";
 import {
@@ -28,22 +25,30 @@ export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
 
   return (
     <IonItem>
-      <IonLabel slot="end">
-        <IonButton
-          id={`msg-menu-${chatMessage.message?.replace(" ", "_")}`}
-          fill="clear"
-          onClick={() => setOpenMessageMenuOverlay(!openMessageMenuOverlay)}
-        >
-          <IonIcon icon={ellipsisVertical}></IonIcon>
-        </IonButton>
-      </IonLabel>
+      {chatMessage.attachment?.attachmentUrl && (
+        <div slot="end">
+          <IonButton
+            id={`msg-menu-${chatMessage.message?.replace(" ", "_")}`}
+            fill="clear"
+            onClick={() => setOpenMessageMenuOverlay(!openMessageMenuOverlay)}
+          >
+            <IonIcon icon={ellipsisVertical}></IonIcon>
+          </IonButton>
+        </div>
+      )}
 
-      <IonLabel>
+      <div>
         <h6>{chatMessage.sender?.userName}</h6>
         <p>
-          <p>{chatMessage.message}</p>
+          {chatMessage.message}
+          <br />
           {chatMessage.attachment?.attachmentUrl && (
-            <audio src={`${APIBaseURL.replace("/api", "")}${chatMessage.attachment.attachmentUrl}`} controls />
+            <audio
+              src={`${APIBaseURL.replace("/api", "")}${
+                chatMessage.attachment.attachmentUrl
+              }`}
+              controls
+            />
           )}
 
           <br />
@@ -56,7 +61,7 @@ export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
             {formatDate(chatMessage.createdAt)}
           </small>
         </p>
-      </IonLabel>
+      </div>
       <IonPopover
         trigger={`msg-menu-${chatMessage.message?.replace(" ", "_")}`}
         isOpen={openMessageMenuOverlay}
@@ -69,7 +74,9 @@ export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
               onClick={async () => {
                 setOpenTranscriptOverlay(true);
                 const audioText = await transcribeAudioURL(
-                  `${APIBaseURL.replace("/api", "")}${chatMessage.attachment?.attachmentUrl}`
+                  `${APIBaseURL.replace("/api", "")}${
+                    chatMessage.attachment?.attachmentUrl
+                  }`
                 );
                 setTranscript(audioText);
               }}
@@ -85,17 +92,17 @@ export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
       >
         <div>
           <IonItem>
-            <IonLabel slot="end">
+            <div slot="end">
               <IonButton
                 fill="clear"
                 onClick={() => {
-                    setOpenTranscriptOverlay(false);
-                    setOpenMessageMenuOverlay(false);
+                  setOpenTranscriptOverlay(false);
+                  setOpenMessageMenuOverlay(false);
                 }}
               >
                 <IonIcon icon={closeCircle}></IonIcon>
               </IonButton>
-            </IonLabel>
+            </div>
           </IonItem>
 
           <div>
