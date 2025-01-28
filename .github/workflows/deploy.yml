@@ -1,0 +1,25 @@
+name: Deploy to InfinityFree
+
+on:
+  push:
+    branches:
+      - main  # Deploy when changes are pushed to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up FTP deployment
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.5.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist  # Change this to your build output folder
+          server-dir: /htdocs  # Change this to the root directory of your InfinityFree hosting
