@@ -20,7 +20,6 @@ class PCMBatchProcessor extends AudioWorkletProcessor {
     process(inputs, outputs) {
       try{
         const input = inputs[0];
-        
         if (input && input[0]) {
           let channelData = input[0];
          

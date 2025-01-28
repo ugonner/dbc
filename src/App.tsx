@@ -45,9 +45,8 @@ import { RTCToolsProvider } from "./contexts/rtc";
 import Rooms from "./pages/video-conferencing/Rooms";
 import { ProducingPage } from "./pages/video-conferencing/ProducingPage";
 import ConferenceRoom from "./pages/video-conferencing/ConferenceRoom";
-import { ModalContextProvider } from "./utils/contexts/overlays/ModalContextProvider";
 import { AsyncHelperProvider, useAsyncHelpersContext } from "./contexts/async-helpers";
-import { ComponentModal } from "./utils/components/modals/ComponentModal";
+
 import { Loader } from "./components/Loader";
 import { AdminBoard } from "./pages/admin/AdminBoard";
 import { Chats } from "./pages/talkable/Chats";
@@ -61,7 +60,6 @@ const App: React.FC = () => (
 
   <IonApp>
     <RTCToolsProvider>
-      <ModalContextProvider>
         <AsyncHelperProvider>
           <IonReactRouter>
               
@@ -115,7 +113,7 @@ const App: React.FC = () => (
           </IonReactRouter>
             
         </AsyncHelperProvider>
-      </ModalContextProvider>
+      
     </RTCToolsProvider>
   </IonApp>
 

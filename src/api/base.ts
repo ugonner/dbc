@@ -1,10 +1,8 @@
-
-const baseIp = `https://192.168.43.219`;
-const baseWsIp = "wss://192.168.43.219"
-//const baseIp = "https://localhost";
-//const baseWsIp = "wss://localhost";
-
-
+const ip = `13.60.184.229`;
+// const ip = `localhost
+;
+const baseIp = `https://${ip}`;
+const baseWsIp = `wss://${ip}`;
 
 const serverPort = 4000;
 const appPort = 8100;

@@ -15,7 +15,6 @@ import {
   useAuthGuardContextStore,
 } from "../contexts/auth/AuthGuardContext";
 import { Dispatch, PropsWithChildren, useState } from "react";
-import { useModalContextStore } from "../utils/contexts/overlays/ModalContextProvider";
 import { CreateRoom } from "../pages/video-conferencing/CreateRoom";
 import { LoginOrRegister } from "../components/auth/LoginOrRegister";
 

@@ -39,7 +39,9 @@ export interface IRTCTools {
     roomContext: IRoomContext | undefined;
     setRoomContext: Dispatch<SetStateAction<IRoomContext | undefined>>;
     dataProducer: DataProducer | undefined;
-    setDataProducer: Dispatch<SetStateAction<DataProducer | undefined>>
+    setDataProducer: Dispatch<SetStateAction<DataProducer | undefined>>;
+    setShowModalText: Dispatch<SetStateAction<string>>;
+    showModalText: string;
 }
 
 export const RTCToolsContext = createContext({} as unknown as IRTCTools)
@@ -63,8 +65,9 @@ export const RTCToolsProvider = ({children}: PropsWithChildren) => {
 
     const [userMediaStream, setUserMediaStream] = useState<MediaStream>()
     const [userReactionsState, setUserReactionsState] = useState<IUserReactions>({})
+    const [showModalText, setShowModalText] = useState("");
     const initRTCTools: IRTCTools = {
-        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStream, setUserMediaStream, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer
+        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStream, setUserMediaStream, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText
     };
     
     return (

@@ -7,7 +7,6 @@ import {
   toggleAudio,
   toggleVIdeo,
 } from "../../utils/rtc/mediasoup/functionalities";
-import { useModalContextStore } from "../../utils/contexts/overlays/ModalContextProvider";
 import { Socket } from "socket.io-client";
 import { BroadcastEvents } from "../../shared/enums/events.enum";
 
@@ -24,7 +23,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
   } = useRTCToolsContextStore();
   const [presentToast] = useIonToast();
   const [showToolbar, setShowTaskbar] = useState(false);
-  const {setShowModalText} = useModalContextStore();
+  
   useEffect(() => {
     (async () => {
       try {
