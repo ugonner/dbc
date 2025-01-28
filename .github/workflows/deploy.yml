@@ -21,5 +21,5 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dist  # Change this to your build output folder
+          local-dir: ./dist  # Change this to your build output folder ie dist for vite project
           server-dir: /htdocs  # Change this to the root directory of your InfinityFree hosting
