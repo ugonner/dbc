@@ -82,9 +82,7 @@ import {
   ToggleProducerStateDTO,
   UserReactionsDTO,
 } from "../../shared/dtos/responses/signals";
-import { useModalContextStore } from "../../utils/contexts/overlays/ModalContextProvider";
 import { ProducingPage } from "./ProducingPage";
-import { ComponentModal } from "../../utils/components/modals/ComponentModal";
 import { RoomParticipants } from "../../components/conference-room/RoomParticipants";
 import { userReactionsEmojis } from "../../shared/DATASETS/user-reaction-emojis";
 import {
@@ -193,7 +191,10 @@ const ConferenceRoom: React.FC = () => {
     setRoomContext,
     subTitles,
     setSubTitles,
+    showModalText,
+    setShowModalText
   } = useRTCToolsContextStore();
+
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
   const roomSubtitleRef = useRef<IRoomMessage[]>();
@@ -204,7 +205,6 @@ const ConferenceRoom: React.FC = () => {
   const [presentAlert, dismissAlert] = useIonAlert();
 
   const [presentModal, dismissModal] = useIonModal(ProducingPage);
-  const { setShowModalText, showModalText } = useModalContextStore();
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
   useIonViewWillEnter(() => {

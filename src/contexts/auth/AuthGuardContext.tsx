@@ -1,7 +1,5 @@
 import { IonModal, IonPopover, useIonRouter } from "@ionic/react";
 import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
-import { LoginOrRegister } from "../../components/auth/LoginOrRegister";
-import { ComponentModal } from "../../utils/components/modals/ComponentModal";
 
 export interface IAuthContextProps {
     isLoggedIn: boolean;
