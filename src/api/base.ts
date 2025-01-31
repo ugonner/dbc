@@ -1,18 +1,25 @@
-const ip = `13.60.184.229`;
-// const ip = `localhost
-;
-const baseIp = `https://${ip}`;
-const baseWsIp = `wss://${ip}`;
+const baseAPI = `https://talkable.online`;
+export const socketIOBaseURL = `${baseAPI}/call`;
+export const TalkableSocketBaseURL = `${baseAPI}/talkable`;
 
-const serverPort = 4000;
-const appPort = 8100;
+export const AppBaseUrl = `https://ugonnatalk.vercel.app`;
+export const APIBaseURL = `${baseAPI}/api`;
+
+// const ip = `13.60.184.229`;
+// // const ip = `localhost
+// ;
+// const baseIp = `https://${ip}`;
+// const baseWsIp = `wss://${ip}`;
+
+// const serverPort = 4000;
+// const appPort = 8100;
 
 //const baseIp = `https://localhost:4000`;
-export const socketIOBaseURL = `${baseIp}:${serverPort}/call`;
-export const TalkableSocketBaseURL = `${baseWsIp}:${serverPort}/talkable`;
+// export const socketIOBaseURL = `${baseIp}:${serverPort}/call`;
+// export const TalkableSocketBaseURL = `${baseWsIp}:${serverPort}/talkable`;
 
-export const AppBaseUrl = `${baseIp}:${appPort}`;
-export const APIBaseURL = `${baseIp}:${serverPort}/api`;
+// export const AppBaseUrl = `${baseIp}:${appPort}`;
+// export const APIBaseURL = `${baseIp}:${serverPort}/api`;
 
 
 export const convertObjectLiteralToQueryString = (payload: {[key: string]: unknown}) => {
