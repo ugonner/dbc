@@ -721,7 +721,8 @@ const ConferenceRoom: React.FC = () => {
         );
       });
       if (!/success/.test(joinRes.status)) {
-        await presentToast(`${joinRes.message}`), 300;
+        await presentToast(`${joinRes.message}`, 3000);
+        setShowModalText("");
         navigateOutOfRoom();
       }
     } catch (error) {
@@ -891,6 +892,7 @@ const ConferenceRoom: React.FC = () => {
                 ? await setUp(socket as Socket)
                 : await requestToJoin(socket as Socket);
             }}
+            canJoin={canJoin ? true : false}
           />
         </IonModal>
 

@@ -53,6 +53,7 @@ import { Chats } from "./pages/talkable/Chats";
 import { TalkableHome } from "./pages/talkable/TalkableHome";
 import { ChatRoomPage } from "./pages/talkable/ChatRoomPage";
 import { TalkableContextProvider } from "./contexts/talkables/talkable";
+import { TalkableUser } from "./pages/talkable/TalkableUser";
 
 setupIonicReact();
 
@@ -80,7 +81,7 @@ const App: React.FC = () => (
                 <Route 
                 exact 
                 path="/hub"
-                component={TalkableHome}
+                component={TalkableUser}
                   />
 
                 <Route path={"/:tab(conference)/rooms"} component={Rooms} />
@@ -91,19 +92,22 @@ const App: React.FC = () => (
                 />
 
                 <Route exact path="/">
-                  <Redirect to="/talkable" />
+                  <Redirect to="/hub" />
                 </Route>
                 <Route path={"/admin"} component={AdminBoard}></Route>
               </IonRouterOutlet>
+
               <IonTabBar slot="bottom">
-                <IonTabButton tab="talkable" href="/talkable">
-                  <IonIcon aria-hidden="true" icon={phonePortrait} />
-                  <IonLabel>Talkable</IonLabel>
-                </IonTabButton>
                 <IonTabButton tab="hub" href="/hub">
                   <IonIcon aria-hidden="true" icon={ellipse} />
                   <IonLabel>Hub</IonLabel>
                 </IonTabButton>
+                
+                <IonTabButton tab="talkable" href="/talkable">
+                  <IonIcon aria-hidden="true" icon={phonePortrait} />
+                  <IonLabel>Talkable</IonLabel>
+                </IonTabButton>
+                
                 <IonTabButton tab="conference" href="/conference/rooms">
                   <IonIcon aria-hidden="true" icon={square} />
                   <IonLabel>Conference</IonLabel>

@@ -5,16 +5,14 @@ export const TalkableSocketBaseURL = `${baseAPI}/talkable`;
 export const AppBaseUrl = `https://ugonnatalk.vercel.app`;
 export const APIBaseURL = `${baseAPI}/api`;
 
-// const ip = `13.60.184.229`;
-// // const ip = `localhost
-// ;
-// const baseIp = `https://${ip}`;
-// const baseWsIp = `wss://${ip}`;
+//const baseIp = `http://13.60.184.229`;
+// const baseIp = `http://localhost`;
+// const baseWsIp = `ws://lo`
+
 
 // const serverPort = 4000;
 // const appPort = 8100;
 
-//const baseIp = `https://localhost:4000`;
 // export const socketIOBaseURL = `${baseIp}:${serverPort}/call`;
 // export const TalkableSocketBaseURL = `${baseWsIp}:${serverPort}/talkable`;
 

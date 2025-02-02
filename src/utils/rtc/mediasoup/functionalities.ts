@@ -25,7 +25,7 @@ export async function joinRoom(socket: Socket, dto: JoinRoomDTO) {
   export function stopMediaTracks(userMediaStream: MediaStream) {
     try{
       const tracks = userMediaStream?.getTracks();
-      tracks?.forEach((track) => track.stop())
+      tracks?.forEach(  (track) => { track.enabled = false; track.stop(); })
     }catch(error){
       console.log( "Error stopping media tracks",(error as Error).message)
     }

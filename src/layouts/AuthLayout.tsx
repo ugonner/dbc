@@ -15,7 +15,6 @@ import {
   useAuthGuardContextStore,
 } from "../contexts/auth/AuthGuardContext";
 import { Dispatch, PropsWithChildren, useState } from "react";
-import { CreateRoom } from "../pages/video-conferencing/CreateRoom";
 import { LoginOrRegister } from "../components/auth/LoginOrRegister";
 
 export interface IAuthLayoutProps extends PropsWithChildren {
@@ -39,13 +38,6 @@ export const AuthLayout = ({ pageTitle, children }: IAuthLayoutProps) => {
           <IonTitle slot="start">{pageTitle ? pageTitle : ""}</IonTitle>
 
           <IonButton
-            slot="start"
-            onClick={() => setOpenEventModal(!openEventModal)}
-          >
-            create event
-          </IonButton>
-
-          <IonButton
             slot="end"
             onClick={() => {
               if (isLoggedIn) logout();
@@ -61,9 +53,6 @@ export const AuthLayout = ({ pageTitle, children }: IAuthLayoutProps) => {
         {children}
       </IonContent>
 
-      <IonModal isOpen={openEventModal}>
-        <CreateRoom roomType="instant"></CreateRoom>
-      </IonModal>
 
       <IonModal isOpen={openAuthModal}>
         <LoginOrRegister />

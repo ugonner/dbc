@@ -12,7 +12,9 @@ import { BroadcastEvents } from "../../shared/enums/events.enum";
 
 export interface IProducingPageProps {
   joinHandler?: Function;
+  canJoin: boolean
 }
+
 export const ProducingPage = (props: IProducingPageProps) => {
   const {
     setUserMediaStream,
@@ -77,16 +79,16 @@ export const ProducingPage = (props: IProducingPageProps) => {
                 if(props.joinHandler) await props.joinHandler();
               }}
             >
-              Ask To Join
+              {props.canJoin ? "Join" : "Ask to join"}
             </IonButton>
           </IonItem>
         </IonToolbar>
       )}
 
-      <div>
-        {/* <CallVideo
+      <div style={{width: "480px", height: "auto"}}>
+        <CallVideo
           mediaStream={userMediaStream}
-        /> */}
+        />
       </div>
     </div>
   );
