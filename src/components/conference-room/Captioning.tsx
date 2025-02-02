@@ -6,6 +6,7 @@ import * as vosk from "vosk-browser";
 import { AppBaseUrl } from "../../api/base";
 import { IonButton, IonIcon, IonItem, IonPopover, IonText, IonToast } from "@ionic/react";
 import { chatbox, closeCircle, diamondSharp } from "ionicons/icons";
+import { useAsyncHelpersContext } from "../../contexts/async-helpers";
 
 export interface ICaptioningProps {
   producerUsers: IProducerUser[];
@@ -25,6 +26,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   const streamRef = useRef<MediaStream | null>();
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>();
   const mediaSourceRef = useRef<MediaStreamAudioSourceNode | null>();
+  const {setLoading} = useAsyncHelpersContext();
 
   const startCaptioning = async (producers: IProducerUser[]) => {
     try {
@@ -187,6 +189,8 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
         const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
         const sampleRate = audioSampleRate;
 
+        setLoading({isLoading: true, loadingMessage: ""})
+      
         const modell = await vosk.createModel(modelPath);
         modell.setLogLevel(1);
         const rec = new modell.KaldiRecognizer(sampleRate);
@@ -203,7 +207,11 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
         });
 
         recognizerRef.current = rec;
+        setLoading({isLoading: true, loadingMessage: ""})
+      
       } catch (error) {
+        setLoading({isLoading: false, loadingMessage: ""})
+      
         console.log("Error at useEffect", (error as Error).message);
       }
     };

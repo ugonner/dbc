@@ -207,44 +207,12 @@ export const Chats = () => {
               text: "Accept",
               handler: async () => {
                 try {
-                  const acceptanceRes: IApiResponse<IChat> = await new Promise(
-                    (resolve, reject) => {
-                      socketRef.current?.emit(
-                        TalkableChatEvents.JOIN_INVITE_ACCEPTANCE,
-                        newChat,
-                        resolve
-                      );
-                    }
-                  );
-                  if (acceptanceRes.error)
-                    throw new Error(acceptanceRes.message);
-
-                  const newChatData: IChat = acceptanceRes.data || newChat as IChat;
-                  let chatsData: IChat[] = [...chats];
-                  const newChatIndex = chatsData.findIndex((cht) => cht.chatId === newChatData?.chatId);
-                  if(newChatIndex !== -1) chatsData[newChatIndex] = newChatData;
-                  else chatsData.push(newChatData);
-
-                  console.log("before setting chats", chatsData)
-                  setChats(chatsData);
-                  localStorage.setItem(LocalStorageKeys.CHATS, JSON.stringify(chatsData))
-                  
-                  const chatMessage: IChatMessage = {
-                    chatId: newChatData.chatId,
-                    sender: DBCChatUser,
-                    receiver: newChat?.users?.find(
-                      (usr) => usr.userId !== DBCChatUser.userId
-                    ) as IChatUser,
-                    message: "Hi, how can I help you ",
-                    createdAt: new Date().toISOString(),
-                    isViewed: false,
-                  };
                   socketRef.current?.emit(
-                    TalkableChatEvents.CHAT_MESSAGE,
-                    chatMessage
+                    TalkableChatEvents.JOIN_INVITE_ACCEPTANCE,
+                    newChat,
                   );
-                  currentChatRef.current = newChatData?.chatId as string;
-                  navigateTalkableChatPages({to: TalkablePage.CHAT_ROOM, chatRoomId: currentChatRef.current});
+
+
                 } catch (error) {
                   console.log(
                     "Error acception invite",

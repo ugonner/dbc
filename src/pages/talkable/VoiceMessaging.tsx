@@ -19,6 +19,7 @@ import { TalkableChatEvents } from "../../shared/enums/talkables/chat-event.enum
 import audioBufferToWav from "audiobuffer-to-wav";
 import { APIBaseURL } from "../../api/base";
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
+import { useAsyncHelpersContext } from "../../contexts/async-helpers";
 export const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
         
 export interface IVoiceMessagingProps {
@@ -46,7 +47,7 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>();
   const mediaSourceRef = useRef<MediaStreamAudioSourceNode | null>();
   const captionsArrRef = useRef<string[]>([]);
-
+  const {setLoading} = useAsyncHelpersContext();
   
   const uploadAudioData = async (): Promise<IMessageAttachment> => {
     
@@ -58,6 +59,7 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
     const audioBlob = new Blob([audioArr], {type: "audio/wav"});
     const formData = new FormData();
     formData.append("file", audioBlob);
+    
     const res = await fetch(`${APIBaseURL}/file-upload`, {
       method: "post",
       body: formData,
@@ -216,7 +218,8 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
     const loadRecognixer = async () => {
       try {
         const sampleRate = audioSampleRate;
-
+        setLoading({isLoading: true, loadingMessage: ""})
+      
         const modell = await vosk.createModel(modelPath);
         modell.setLogLevel(1);
         const rec = new modell.KaldiRecognizer(sampleRate);
@@ -240,7 +243,11 @@ export const VoiceMessaging = ({chat}: IVoiceMessagingProps) => {
         // });
 
         recognizerRef.current = rec;
+        setLoading({isLoading: false, loadingMessage: ""})
+      
       } catch (error) {
+        setLoading({isLoading: false, loadingMessage: ""})
+      
         console.log("Error at useEffect", (error as Error).message);
       }
     };

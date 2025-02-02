@@ -1,5 +1,6 @@
 import { IonLoading, IonModal } from "@ionic/react";
 import React, { createContext, Dispatch, SetStateAction, useContext, useState } from "react";
+import { Loader } from "../components/Loader";
 
 export interface ILoadingProps {
     isLoading: boolean;
@@ -13,9 +14,9 @@ export interface IErrorProps {
 }
 export interface IAsyncProps {
     loading: ILoadingProps
-    setLoading: SetStateAction<Dispatch<ILoadingProps>>;
+    setLoading: Dispatch<SetStateAction<ILoadingProps>>;
     error: IErrorProps;
-    setError: SetStateAction<Dispatch<IErrorProps>>;
+    setError: Dispatch<SetStateAction<IErrorProps>>;
 }
 
 const AsyncContext: React.Context<IAsyncProps> = createContext({} as IAsyncProps);
@@ -32,6 +33,9 @@ export const AsyncHelperProvider = ({children}: React.PropsWithChildren) => {
 
     return (
         <AsyncContext.Provider value={initAsyncHelperProps}>
+            <div>
+                <Loader />
+            </div>
             {children}
             
                 <IonLoading isOpen={loading.isLoading} onDidDismiss={() => setLoading({loadingMessage: "", isLoading: false})} message={loading.loadingMessage} duration={5000} backdropDismiss={true}></IonLoading>

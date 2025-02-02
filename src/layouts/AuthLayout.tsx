@@ -24,7 +24,7 @@ export interface IAuthLayoutProps extends PropsWithChildren {
 export const AuthLayout = ({ pageTitle, children }: IAuthLayoutProps) => {
   const { isLoggedIn, setIsLoggedIn, openAuthModal, setOpenAuthModal } =
     useAuthGuardContextStore();
-    const [openEventModal, setOpenEventModal] = useState(false);
+  const [openEventModal, setOpenEventModal] = useState(false);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -37,11 +37,14 @@ export const AuthLayout = ({ pageTitle, children }: IAuthLayoutProps) => {
       <IonHeader>
         <IonToolbar>
           <IonTitle slot="start">{pageTitle ? pageTitle : ""}</IonTitle>
-          
-          <IonButton slot="start" onClick={() => setOpenEventModal(!openEventModal)}>
+
+          <IonButton
+            slot="start"
+            onClick={() => setOpenEventModal(!openEventModal)}
+          >
             create event
           </IonButton>
-          
+
           <IonButton
             slot="end"
             onClick={() => {
@@ -50,19 +53,21 @@ export const AuthLayout = ({ pageTitle, children }: IAuthLayoutProps) => {
               else setOpenAuthModal(true as boolean & Dispatch<boolean>);
             }}
           >
-             {isLoggedIn ? "logout" : "login"}
+            {isLoggedIn ? "logout" : "login"}
           </IonButton>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen className="ion-padding">{children}</IonContent>
-      
+      <IonContent fullscreen className="ion-padding">
+        {children}
+      </IonContent>
+
       <IonModal isOpen={openEventModal}>
         <CreateRoom roomType="instant"></CreateRoom>
       </IonModal>
-      
-              <IonModal isOpen={openAuthModal}>
-                  <LoginOrRegister />
-              </IonModal>
+
+      <IonModal isOpen={openAuthModal}>
+        <LoginOrRegister />
+      </IonModal>
     </IonPage>
   );
 };

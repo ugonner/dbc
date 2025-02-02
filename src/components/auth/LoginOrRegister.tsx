@@ -14,6 +14,7 @@ import { Dispatch, FormEvent, useState } from "react";
 import { APIBaseURL, postData } from "../../api/base";
 import { IAuthUserProfile, ILoginResponse } from "../../shared/interfaces/user";
 import { useAuthGuardContextStore } from "../../contexts/auth/AuthGuardContext";
+import { useAsyncHelpersContext } from "../../contexts/async-helpers";
 
 export interface IAuthUser {
   email?: string;
@@ -23,6 +24,8 @@ export interface IAuthUser {
   lastName?: string;
 }
 export const LoginOrRegister = () => {
+  const {setLoading} = useAsyncHelpersContext();
+
   const [isSignUp, setIsSignUp] = useState(false);
   const [authUser, setAuthUser] = useState({} as IAuthUser);
   const [showPassword, setShowPassword] = useState(false);
@@ -40,6 +43,7 @@ export const LoginOrRegister = () => {
 
   const submit = async () => {
     try {
+      setLoading({isLoading: true, loadingMessage: ""})
       const res = isSignUp
         ? await postData(`${APIBaseURL}/auth/register`, {
             method: "post",
@@ -49,7 +53,8 @@ export const LoginOrRegister = () => {
             method: "post",
             ...authUser,
           });
-      localStorage.setItem("user", JSON.stringify(res as IAuthUserProfile));
+          setLoading({isLoading: false, loadingMessage: ""})
+        localStorage.setItem("user", JSON.stringify(res as IAuthUserProfile));
       setOpenAuthModal(false as unknown as boolean & Dispatch<boolean>);
       if ((res as ILoginResponse).token) {
         localStorage.setItem("token", `${(res as ILoginResponse).token}`);
@@ -57,6 +62,7 @@ export const LoginOrRegister = () => {
       }
       presentToast("Successful Access", 3000);
     } catch (error) {
+      setLoading({isLoading: false, loadingMessage: ""})
       presentToast((error as Error).message, 3000);
       console.log((error as Error).message);
     }
@@ -122,6 +128,7 @@ export const LoginOrRegister = () => {
                 ></IonInput>
               </IonItem>
               <IonButton
+              fill="clear"
                 size="small"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -166,14 +173,14 @@ export const LoginOrRegister = () => {
               <IonButton expand="full" onClick={submit}>
                 {isSignUp ? "Register" : "Login"}
               </IonButton>
-              <IonSegment>
-                <IonSegmentButton onClick={() => setIsSignUp(true)}>
+              <div>
+                <IonButton expand="full" fill="clear" onClick={() => setIsSignUp(true)}>
                   New Account, Sign up{" "}
-                </IonSegmentButton>
-                <IonSegmentButton onClick={() => setIsSignUp(false)}>
+                </IonButton>
+                <IonButton expand="full" fill="clear" onClick={() => setIsSignUp(false)}>
                   Existing User, Log In{" "}
-                </IonSegmentButton>
-              </IonSegment>
+                </IonButton>
+              </div>
             </div>
           </form>
         </div>

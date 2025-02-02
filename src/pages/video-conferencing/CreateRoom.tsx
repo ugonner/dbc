@@ -27,7 +27,7 @@ export interface ICreateRoomProps {
 
 export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
   const [room, setRoom] = useState({} as IRoom);
-
+  const [openEventDateOverlay, setOpenEventDateOverlay] = useState(false);
   const handleCustomInput = (
     evt:
       | DatetimeCustomEvent
@@ -37,11 +37,11 @@ export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
     const { name, value } = (evt as FormEvent<HTMLIonInputElement>)
       .currentTarget;
     setRoom({ ...room, [name]: value });
+    setOpenEventDateOverlay(false);
   };
 
   const createEvent = async () => {
     try {
-      alert(JSON.stringify(room));
 
       const res = await postData(`${APIBaseURL}/room`, {
         method: "post",
@@ -75,7 +75,7 @@ export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
               <IonDatetimeButton datetime="event-start-time"></IonDatetimeButton>
             </IonItem>
 
-            <IonModal keepContentsMounted={true}>
+            <IonModal isOpen={openEventDateOverlay} onDidDismiss={() => setOpenEventDateOverlay(false)} keepContentsMounted={true}>
               <IonDatetime
                 id="event-start-time"
                 name="startTime"
@@ -87,11 +87,11 @@ export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
             <IonItem className="no-lines">
               <IonSelect
                 name="duration"
-                value={5}
                 onIonChange={handleCustomInput}
                 label="Event Duration"
                 labelPlacement="stacked"
               >
+                <IonSelectOption value={0}>Select Duration</IonSelectOption>
                 {[5, 10, 15, 20, 30].map((durationTime, i) => (
                   <IonSelectOption key={i} value={durationTime}>
                     {durationTime} minutes{" "}
