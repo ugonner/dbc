@@ -23,7 +23,12 @@ export interface IAuthUser {
   firstName?: string;
   lastName?: string;
 }
-export const LoginOrRegister = () => {
+
+export interface ILoginOrCreateUserProps {
+  onSuccess: Function;
+}
+
+export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
   const {setLoading} = useAsyncHelpersContext();
 
   const [isSignUp, setIsSignUp] = useState(false);
@@ -53,18 +58,22 @@ export const LoginOrRegister = () => {
             method: "post",
             ...authUser,
           });
-          setLoading({isLoading: false, loadingMessage: ""})
-        localStorage.setItem("user", JSON.stringify(res as IAuthUserProfile));
-      setOpenAuthModal(false as unknown as boolean & Dispatch<boolean>);
+      localStorage.setItem("user", JSON.stringify(res as IAuthUserProfile));
       if ((res as ILoginResponse).token) {
         localStorage.setItem("token", `${(res as ILoginResponse).token}`);
         setIsLoggedIn(true as boolean & Dispatch<boolean>);
       }
       presentToast("Successful Access", 3000);
+      setLoading({isLoading: false, loadingMessage: ""})
+      setOpenAuthModal(false as unknown as boolean & Dispatch<boolean>);
+      onSuccess();
+      window.location.reload();
+     
+      
     } catch (error) {
       setLoading({isLoading: false, loadingMessage: ""})
       presentToast((error as Error).message, 3000);
-      console.log((error as Error).message);
+      console.log((error as Error).message, "Error signin or registring user");
     }
   };
 

@@ -20,14 +20,18 @@ import {
   SelectCustomEvent,
 } from "@ionic/react";
 import { APIBaseURL, postData } from "../../api/base";
+import { useHistory } from "react-router";
 
 export interface ICreateRoomProps {
   roomType?: "instant" | "scheduled";
+  onSuccess: Function
 }
 
-export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
+export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
   const [room, setRoom] = useState({} as IRoom);
   const [openEventDateOverlay, setOpenEventDateOverlay] = useState(false);
+  const router = useHistory();
+
   const handleCustomInput = (
     evt:
       | DatetimeCustomEvent
@@ -47,6 +51,8 @@ export const CreateRoom = ({ roomType }: ICreateRoomProps) => {
         method: "post",
         ...room,
       });
+      onSuccess();
+    window.location.href = (`/conference/rooms`);
     } catch (error) {
       console.log("Error creating event room", (error as Error).message);
     }

@@ -92,7 +92,7 @@ const App: React.FC = () => (
                 />
 
                 <Route exact path="/">
-                  <Redirect to="/hub" />
+                  <Redirect to="/conference/rooms" />
                 </Route>
                 <Route path={"/admin"} component={AdminBoard}></Route>
               </IonRouterOutlet>

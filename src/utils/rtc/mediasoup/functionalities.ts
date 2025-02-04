@@ -53,6 +53,7 @@ export async function joinRoom(socket: Socket, dto: JoinRoomDTO) {
       const canJoinAs: ICanJoinAs = {};
 
       const room = await getData<IRoom>(`${APIBaseURL}/room/${roomId}`);
+      console.log("room", room.owner, userId);
       if(room?.owner?.userId === userId) canJoinAs.isOwner = true;
       if(room?.invitees?.find((user) => user.userId === userId)) canJoinAs.isInvitee = true;
       const aidServiceProvided = room?.aidServiceProviders?.find((user) => user.userId === userId);

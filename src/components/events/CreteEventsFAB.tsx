@@ -14,7 +14,7 @@ export const CreateEventsFAB: React.FC = () => {
             isOpen={openCreateEventOverlay}
             onDidDismiss={() => setOpenCreateEventOverlay(false)}
             >
-              <CreateRoom roomType="instant"></CreateRoom>
+              <CreateRoom onSuccess={() => setOpenCreateEventOverlay(false)} roomType="instant"></CreateRoom>
             </IonModal>
 
         {/* Main FAB button with an expandable action list */}
