@@ -83,7 +83,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
         <IonTitle>Welcome Dear</IonTitle>
       </IonHeader>
       <IonContent className="ion-padding">
-        <div className="form-group">
+        <div className="">
           <IonSegment>
             <IonSegmentButton
               value={0}
@@ -98,7 +98,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
             </IonSegmentButton>
           </IonSegment>
           <form>
-            <div className="form-control">
+            <div className="">
               {usePhoneNumber ? (
                 <IonItem>
                   <IonInput
@@ -125,7 +125,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
               )}
             </div>
 
-            <div className="form-control">
+            <div className="">
               <IonItem>
                 <IonInput
                   type={showPassword ? "text" : "password"}
@@ -147,7 +147,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
 
             {isSignUp ? (
               <div>
-                <div className="form-control">
+                <div className="">
                   <IonItem>
                     <IonInput
                       type="text"
@@ -161,7 +161,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
                   </IonItem>
                 </div>
 
-                <div className="form-control">
+                <div className="">
                   <IonItem>
                     <IonInput
                       type="text"

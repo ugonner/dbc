@@ -720,6 +720,7 @@ const ConferenceRoom: React.FC = () => {
           resolve
         );
       });
+      console.log("JOIN RES", joinRes);
       if (!/success/.test(joinRes.status)) {
         await presentToast(`${joinRes.message}`, 3000);
         setShowModalText("");
