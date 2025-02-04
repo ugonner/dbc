@@ -30,7 +30,7 @@ export const Rooms: React.FC = () => {
         setRooms(res);
       } catch (error) {
         console.log("Error fetching", error as Error);
-        presentToast("Error fetching your meetings");
+        presentToast("Error fetching your meetings", 5000);
       }
     })();
   }, []);

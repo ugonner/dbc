@@ -485,7 +485,7 @@ const ConferenceRoom: React.FC = () => {
           setRoomCaptions(chatMessageData);
           await speakText(data.payload?.message);
         }
-        presentToast(chatMessageData.message);
+        presentToast(chatMessageData.message, 4000);
         chatMessagesRef.current = [
           ...(chatMessagesRef.current || []),
           chatMessageData,
@@ -816,7 +816,7 @@ const ConferenceRoom: React.FC = () => {
                           setOpenSpecialPresenter(false);
                         else
                           presentToast(
-                            `Room Accessibility Priority is set to ${AccessibilityPriority.HIGH}, so you can not remove special presenters`
+                            `Room Accessibility Priority is set to ${AccessibilityPriority.HIGH}, so you can not remove special presenters`, 4000
                           );
                       }}
                       aria-label="hide special presenter screen"
