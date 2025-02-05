@@ -1,6 +1,7 @@
 import {
   IonActionSheet,
   IonAvatar,
+  IonButton,
   IonCol,
   IonContent,
   IonGrid,
@@ -100,6 +101,7 @@ import {
   moveSharp,
   ellipsisVerticalSharp,
   ellipsisVertical,
+  ellipsisHorizontal,
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -720,7 +722,6 @@ const ConferenceRoom: React.FC = () => {
           resolve
         );
       });
-      console.log("JOIN RES", joinRes);
       if (!/success/.test(joinRes.status)) {
         await presentToast(`${joinRes.message}`, 3000);
         setShowModalText("");
@@ -833,7 +834,8 @@ const ConferenceRoom: React.FC = () => {
               )}
           </IonItem>
           <IonItem>
-            <IonText role="button"
+            <IonButton fill="clear"
+              className="icon-only"
               onClick={async () => {
                 const data: ToggleProducerStateDTO = {
                   room: roomId,
@@ -843,11 +845,12 @@ const ConferenceRoom: React.FC = () => {
                 toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff);
               }}
               aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
+              size="large" 
             >
               <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
-            </IonText>
-
-            <IonText role="button"
+            </IonButton>
+            <IonButton fill="clear"
+              className="icon-only"
               onClick={() => {
                 const data: ToggleProducerStateDTO = {
                   room: roomId,
@@ -856,29 +859,33 @@ const ConferenceRoom: React.FC = () => {
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
                 toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff);
               }}
-              className="ion-padding"
               aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
+              size="large"
             >
               <IonIcon icon={videoTurnedOff ? videocamOff : videocam}></IonIcon>
-            </IonText>
+            </IonButton>
             
             {/* <Captioning producerUsers={producingStreams} /> */}
-            <IonText role="button"
+            
+            <IonButton fill="clear"
+              className="icon-only"
               id="more-tools-toggler"
-              className="icon-only ion-padding"
               onClick={() => setOpenMoreToolsOverlay(!openMoreToolsOverlay)}
               aria-label="open more tools"
+              size="large"
             >
-              <IonIcon icon={ellipsisVertical}></IonIcon>
-            </IonText>
+              <IonIcon icon={ellipsisHorizontal}></IonIcon>
+            </IonButton>
 
-            <IonText role="button"
+            <IonButton fill="clear"
+              className="icon-only"
               aria-label="leave meeting"
               slot="end"
               onClick={navigateOutOfRoom}
+              size="large"
             >
               <IonIcon icon={power}></IonIcon>
-            </IonText>
+            </IonButton>
           </IonItem>
         </IonToolbar>
 
@@ -1173,6 +1180,7 @@ const ConferenceRoom: React.FC = () => {
             >
               Participants
             </IonText>
+            <Captioning producerUsers={producingStreams} />
           </IonItem>
         </IonPopover>
       </IonContent>
