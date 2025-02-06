@@ -26,11 +26,11 @@ import { useIonToast } from "@ionic/react";
 import { Model } from "vosk-browser";
 import * as vosk from "vosk-browser";
 import {
-  audioSampleRate,
-  modelPath,
+  audioSampleRate
 } from "../../pages/talkable/VoiceMessaging";
 import * as wav from "wav";
 import * as bufferToStream from "buffer-to-stream";
+import { modelPath } from "../../components/conference-room/Captioning";
 
 export interface IStatusOverlayOptions {
   openOverlay: boolean;

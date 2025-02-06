@@ -18,6 +18,7 @@ export interface IRoomMessage {
   message: string;
   senderUserName?: string;
   senderSocketId: string;
+  
 }
 
 export interface IRoomMessagesProps {

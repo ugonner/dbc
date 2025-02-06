@@ -5,6 +5,7 @@ export const TalkableSocketBaseURL = `${baseAPI}/talkable`;
 export const AppBaseUrl = `https://ugonnatalk.vercel.app`;
 export const APIBaseURL = `${baseAPI}/api`;
 
+// END DEPLOYED BASES
 //const baseIp = `http://13.60.184.229`;
 
 // const baseIp = `http://localhost`;

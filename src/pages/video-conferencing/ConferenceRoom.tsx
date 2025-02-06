@@ -748,6 +748,7 @@ const ConferenceRoom: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonTitle slot="start">{roomId}</IonTitle>
+          <Captioning producerUsers={producingStreams} />
           <IonText role="button"
             slot="end"
             id="room-menu-button"
@@ -888,7 +889,7 @@ const ConferenceRoom: React.FC = () => {
               }}
               aria-label="show participants"
             >
-              <IonIcon icon={people} /> <sub>{producingStreams.length}</sub>
+              <IonIcon icon={people} /> <sub>{producingStreams.length + 1}</sub>
             </IonButton>
             {/* <Captioning producerUsers={producingStreams} /> */}
             
@@ -1179,7 +1180,7 @@ const ConferenceRoom: React.FC = () => {
               <IonText>Share screen</IonText>
             </IonText>
           </IonItem>
-          <Captioning producerUsers={producingStreams} />
+          
         </IonPopover>
       </IonContent>
     </IonPage>

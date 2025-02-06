@@ -15,6 +15,7 @@ import {
 } from "@ionic/react";
 import { chatbox, closeCircle, diamondSharp } from "ionicons/icons";
 import { IChat } from "../../shared/interfaces/talkables/chat";
+import { modelPath } from "../../components/conference-room/Captioning";
 
 export interface IVoiceMessagingProps {
   chat: IChat;
@@ -71,7 +72,7 @@ export const VoiceMessagingRecorder = ({ chat }: IVoiceMessagingProps) => {
   useEffect(() => {
     const loadRecognixer = async () => {
       try {
-        const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+       // const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
         const sampleRate = audioSampleRate;
 
         const model = await vosk.createModel(modelPath);

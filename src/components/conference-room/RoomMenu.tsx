@@ -8,7 +8,7 @@ import {
   useIonAlert,
 } from "@ionic/react";
 import { Socket } from "socket.io-client";
-import { IAccessibilityPreferences } from "../../shared/interfaces/socket-user";
+import { IAccessibilityPreferences, IProducerUser } from "../../shared/interfaces/socket-user";
 import { formatCamelCaseToSentence, presentToast } from "../../shared/helpers";
 import { BroadcastEvents } from "../../shared/enums/events.enum";
 import { AccessibilityPreferenceDTO } from "../../shared/dtos/requests/signals";
@@ -171,6 +171,7 @@ export const RoomMenu = ({ socket, room }: IRoomMenuProps) => {
           </IonSelect>
         </IonItem>
       </IonList>
+     
     </div>
   );
 };

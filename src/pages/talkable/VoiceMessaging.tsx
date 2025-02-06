@@ -20,7 +20,7 @@ import audioBufferToWav from "audiobuffer-to-wav";
 import { APIBaseURL } from "../../api/base";
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
 import { useAsyncHelpersContext } from "../../contexts/async-helpers";
-export const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+import { modelPath } from "../../components/conference-room/Captioning";
         
 export interface IVoiceMessagingProps {
   chat: IChat;

@@ -16,6 +16,7 @@ import { useTalkableContextStore } from "../../contexts/talkables/talkable";
 import { IChat, IChatMessage, IChatUser } from "../../shared/interfaces/talkables/chat";
 import { userReactionsEmojis } from "../../shared/DATASETS/user-reaction-emojis";
 import { TalkableChatEvents } from "../../shared/enums/talkables/chat-event.enum";
+import { modelPath } from "../../components/conference-room/Captioning";
 
 export interface IVoicingProps {
   chat: IChat;
@@ -179,7 +180,7 @@ export const Voicing = ({chat}: IVoicingProps) => {
   useEffect(() => {
     const loadRecognixer = async () => {
       try {
-        const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+        //const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
         const sampleRate = audioSampleRate;
 
         const modell = await vosk.createModel(modelPath);

@@ -8,6 +8,8 @@ import { IonButton, IonIcon, IonItem, IonPopover, IonText, IonToast } from "@ion
 import { chatbox, closeCircle, diamondSharp } from "ionicons/icons";
 import { useAsyncHelpersContext } from "../../contexts/async-helpers";
 
+export const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+        
 export interface ICaptioningProps {
   producerUsers: IProducerUser[];
 }
@@ -186,7 +188,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   useEffect(() => {
     const loadRecognixer = async () => {
       try {
-        const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+        //const modelPath = `/models/vosk-model-small-en-us-0.15.tar.gz`;
         const sampleRate = audioSampleRate;
 
         setLoading({isLoading: true, loadingMessage: ""})
