@@ -865,6 +865,31 @@ const ConferenceRoom: React.FC = () => {
               <IonIcon icon={videoTurnedOff ? videocamOff : videocam}></IonIcon>
             </IonButton>
             
+            
+            <IonButton 
+              size="large"
+              onClick={() => {
+                setOpenChatMessagesModal(true);
+                setOpenMoreToolsOverlay(false);
+              }}
+              aria-label="chat messages"
+              className="icon-only"
+            >
+              <IonIcon icon={chatbox}></IonIcon>
+            </IonButton>
+          
+            <IonButton 
+              fill="clear"
+              size="large"
+              className="icon-only"
+              onClick={() => {
+                setOpenUsersModal(true);
+                setOpenMoreToolsOverlay(false);
+              }}
+              aria-label="show participants"
+            >
+              <IonIcon icon={people} /> <sub>{producingStreams.length}</sub>
+            </IonButton>
             {/* <Captioning producerUsers={producingStreams} /> */}
             
             <IonButton fill="clear"
@@ -1114,22 +1139,8 @@ const ConferenceRoom: React.FC = () => {
               <IonText>React</IonText>
             </IonText>
           </IonItem>
-          <IonItem>
-            <IonText role="button"
-              onClick={() => {
-                setOpenChatMessagesModal(true);
-                setOpenMoreToolsOverlay(false);
-              }}
-              aria-label="chat messages"
-              className="icon-only"
-            >
-              Room Messages
-            </IonText>
-          </IonItem>
 
           <IonItem>
-            
-
             <IonText role="button"
               onClick={async () => {
                 try {
@@ -1168,20 +1179,7 @@ const ConferenceRoom: React.FC = () => {
               <IonText>Share screen</IonText>
             </IonText>
           </IonItem>
-
-          <IonItem>
-            <IonText role="button"
-              className="icon-only"
-              onClick={() => {
-                setOpenUsersModal(true);
-                setOpenMoreToolsOverlay(false);
-              }}
-              aria-label="show participants"
-            >
-              Participants
-            </IonText>
-            <Captioning producerUsers={producingStreams} />
-          </IonItem>
+          <Captioning producerUsers={producingStreams} />
         </IonPopover>
       </IonContent>
     </IonPage>
