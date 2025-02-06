@@ -747,7 +747,6 @@ const ConferenceRoom: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle slot="start">{roomId}</IonTitle>
           <Captioning producerUsers={producingStreams} />
           <IonText role="button"
             slot="end"

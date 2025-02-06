@@ -1,4 +1,5 @@
 import {
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -21,6 +22,7 @@ import { useRTCToolsContextStore } from "../../contexts/rtc";
 import { APIBaseURL, getData, postData } from "../../api/base";
 import { IAidService } from "../../shared/interfaces/aid-service.interface";
 import { IQueryResult } from "../../shared/interfaces/api-response";
+import { briefcase } from "ionicons/icons";
 
 export interface IRoomMenuProps {
   socket: Socket;
@@ -67,6 +69,9 @@ export const RoomMenu = ({ socket, room }: IRoomMenuProps) => {
 
   return (
     <div>
+      <IonItem>
+        <small slot="end" style={{fontWeight: "bold"}}> <IonIcon icon={briefcase}></IonIcon> &nbsp; {room}</small>
+      </IonItem>
       <h4>Accessibility Preferences</h4>
       <small>Request for accessibility features</small>
       <IonList>
