@@ -102,6 +102,7 @@ import {
   ellipsisVerticalSharp,
   ellipsisVertical,
   ellipsisHorizontal,
+  closeCircle,
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -135,8 +136,8 @@ const ConferenceRoom: React.FC = () => {
   const userFromQuery = {
     userId: queryParams.get("userId"),
     userName: queryParams.get("firstName"),
-    avatar: queryParams.get("avatar")
-  }
+    avatar: queryParams.get("avatar"),
+  };
 
   const {
     userId,
@@ -194,9 +195,8 @@ const ConferenceRoom: React.FC = () => {
     subTitles,
     setSubTitles,
     showModalText,
-    setShowModalText
+    setShowModalText,
   } = useRTCToolsContextStore();
-
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
   const roomSubtitleRef = useRef<IRoomMessage[]>();
@@ -526,12 +526,11 @@ const ConferenceRoom: React.FC = () => {
     }
 
     // handle if user is a special presenter ie a sign language aid provider for the room
-    if(canJoin?.isSpecialPresenter) {
+    if (canJoin?.isSpecialPresenter) {
       await setAsRoomSpecialPresenter(socketInit, roomId);
     }
   }
 
-  
   async function setAsRoomSpecialPresenter(socket: Socket, room: string) {
     try {
       const data: IRoomContext = {
@@ -540,17 +539,10 @@ const ConferenceRoom: React.FC = () => {
         specialPresenterSocketId: socket.id,
       } as IRoomContext;
       await new Promise((resolve) => {
-        socket.emit(
-          BroadcastEvents.ROOM_CONTEXT_MODIFICATION,
-          data,
-          resolve
-        );
+        socket.emit(BroadcastEvents.ROOM_CONTEXT_MODIFICATION, data, resolve);
       });
     } catch (error) {
-      console.log(
-        "Error setting special presenter",
-        (error as Error).message
-      );
+      console.log("Error setting special presenter", (error as Error).message);
     }
   }
   function setRoomCaptions(captionMessage: IRoomMessage) {
@@ -748,7 +740,8 @@ const ConferenceRoom: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <Captioning producerUsers={producingStreams} />
-          <IonText role="button"
+          <IonText
+            role="button"
             slot="end"
             id="room-menu-button"
             onClick={() => setOpenRoomMenuPopover(!openRoomMenuPopover)}
@@ -758,9 +751,21 @@ const ConferenceRoom: React.FC = () => {
           </IonText>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen style={{minHeight: "60%"}}>
-      <div style={{position: "absolute", left: "-9999px"}} aria-hidden={false} aria-live="assertive">{ariaAssertiveNotification}</div>
-      <div style={{position: "absolute", left: "-9998px"}} aria-hidden={false} aria-live="polite">{ariaPoliteNotification}</div>
+      <IonContent fullscreen style={{ minHeight: "60%" }}>
+        <div
+          style={{ position: "absolute", left: "-9999px" }}
+          aria-hidden={false}
+          aria-live="assertive"
+        >
+          {ariaAssertiveNotification}
+        </div>
+        <div
+          style={{ position: "absolute", left: "-9998px" }}
+          aria-hidden={false}
+          aria-live="polite"
+        >
+          {ariaPoliteNotification}
+        </div>
         <div>
           {roomContext?.isSharing ? (
             <div>
@@ -777,7 +782,7 @@ const ConferenceRoom: React.FC = () => {
           )}
         </div>
         {!showModalText && <div className=""></div>}
-        <IonGrid style={{minHeight: "65%"}}>
+        <IonGrid style={{ minHeight: "65%" }}>
           <IonRow>
             {producingStreams.map((p, i) => (
               <IonCol size="6" key={i}>
@@ -807,7 +812,8 @@ const ConferenceRoom: React.FC = () => {
               specialPresnterStream && (
                 <div slot="end" style={{ width: "10%" }}>
                   <IonItem>
-                    <IonText role="button"
+                    <IonText
+                      role="button"
                       slot="end"
                       className="icon-only"
                       onClick={() => {
@@ -818,7 +824,8 @@ const ConferenceRoom: React.FC = () => {
                           setOpenSpecialPresenter(false);
                         else
                           presentToast(
-                            `Room Accessibility Priority is set to ${AccessibilityPriority.HIGH}, so you can not remove special presenters`, 4000
+                            `Room Accessibility Priority is set to ${AccessibilityPriority.HIGH}, so you can not remove special presenters`,
+                            4000
                           );
                       }}
                       aria-label="hide special presenter screen"
@@ -834,7 +841,8 @@ const ConferenceRoom: React.FC = () => {
               )}
           </IonItem>
           <IonItem>
-            <IonButton fill="clear"
+            <IonButton
+              fill="clear"
               className="icon-only"
               onClick={async () => {
                 const data: ToggleProducerStateDTO = {
@@ -845,11 +853,12 @@ const ConferenceRoom: React.FC = () => {
                 toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff);
               }}
               aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
-              size="large" 
+              size="large"
             >
               <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
             </IonButton>
-            <IonButton fill="clear"
+            <IonButton
+              fill="clear"
               className="icon-only"
               onClick={() => {
                 const data: ToggleProducerStateDTO = {
@@ -864,11 +873,11 @@ const ConferenceRoom: React.FC = () => {
             >
               <IonIcon icon={videoTurnedOff ? videocamOff : videocam}></IonIcon>
             </IonButton>
-            
-            
+
             {/* <Captioning producerUsers={producingStreams} /> */}
-            
-            <IonButton fill="clear"
+
+            <IonButton
+              fill="clear"
               className="icon-only"
               id="more-tools-toggler"
               onClick={() => setOpenMoreToolsOverlay(!openMoreToolsOverlay)}
@@ -878,7 +887,8 @@ const ConferenceRoom: React.FC = () => {
               <IonIcon icon={ellipsisHorizontal}></IonIcon>
             </IonButton>
 
-            <IonButton fill="clear"
+            <IonButton
+              fill="clear"
               className="icon-only"
               aria-label="leave meeting"
               slot="end"
@@ -921,7 +931,8 @@ const ConferenceRoom: React.FC = () => {
             </IonItem>
             <div>
               <IonItem>
-                <IonText role="button destructive"
+                <IonText
+                  role="button destructive"
                   slot="end"
                   onClick={() => {
                     socket?.emit(
@@ -934,7 +945,8 @@ const ConferenceRoom: React.FC = () => {
                 >
                   Admit
                 </IonText>
-                <IonText role="button destructive"
+                <IonText
+                  role="button destructive"
                   slot="end"
                   onClick={() => {
                     socket?.emit(
@@ -957,6 +969,17 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setOpenLastUserModal(false)}
           title={lastUserReation}
         >
+          <IonItem>
+            <IonButton
+            fill="clear"
+            slot="end"
+            className="icon-only"
+            onClick={() => setOpenLastUserModal(false)}
+            aria-label="close modal"
+            >
+              <IonIcon icon={closeCircle} />
+            </IonButton>
+            </IonItem>
           <RoomParticipants
             roomParticipants={[lastUser as IProducerUser]}
             socket={socket as Socket}
@@ -988,7 +1011,8 @@ const ConferenceRoom: React.FC = () => {
           <div>
             {Object.keys(userReactionsEmojis).map((reaction) => (
               <IonItem>
-                <IonText role="button"
+                <IonText
+                  role="button"
                   slot="start"
                   onClick={async () => {
                     const actionState = (
@@ -1021,7 +1045,8 @@ const ConferenceRoom: React.FC = () => {
                 >
                   {reaction}
                 </IonText>
-                <IonText role="button"
+                <IonText
+                  role="button"
                   slot="end"
                   onClick={() => {
                     setOpenReactionsActionSheet(false);
@@ -1061,7 +1086,8 @@ const ConferenceRoom: React.FC = () => {
           <div>
             <IonItem>
               <IonTitle slot="start">Chat Messages</IonTitle>
-              <IonText role="button destructive"
+              <IonText
+                role="button destructive"
                 slot="end"
                 onClick={() => setOpenChatMessagesModal(false)}
                 aria-label="close"
@@ -1083,7 +1109,8 @@ const ConferenceRoom: React.FC = () => {
         >
           <div>
             <IonToolbar>
-              <IonText role="button destructive"
+              <IonText
+                role="button destructive"
                 slot="end"
                 onClick={() => setOpenRoomSubtitleModal(false)}
               >
@@ -1103,13 +1130,19 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setOpenMoreToolsOverlay(false)}
           trigger="more-tools-toggler"
         >
-          <div style={{maxHeight: "100px", padding: "10px", overflow: "auto", textAlign: "right"}}>
-            
-          <IonButton
-            expand="full"
-            size="small"
-            fill="clear"
-            style={{ justifyContent: "flex-start", textAlign: "left" }}
+          <div
+            style={{
+              maxHeight: "100px",
+              padding: "10px",
+              overflow: "auto",
+              textAlign: "right",
+            }}
+          >
+            <IonButton
+              expand="full"
+              size="small"
+              fill="clear"
+              style={{ textAlign: "left" }}
               onClick={() => {
                 setOpenReactionsActionSheet(!openReactionsActionSheet);
                 setOpenMoreToolsOverlay(false);
@@ -1121,10 +1154,10 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
 
             <IonButton
-            expand="full"
-            size="small"
-            fill="clear"
-            style={{ justifyContent: "flex-start", textAlign: "left" }}
+              expand="full"
+              size="small"
+              fill="clear"
+              style={{ justifyContent: "flex-start", textAlign: "left" }}
               onClick={async () => {
                 try {
                   if (!navigator.mediaDevices)
@@ -1162,12 +1195,11 @@ const ConferenceRoom: React.FC = () => {
               <IonText>Share screen</IonText>
             </IonButton>
 
-          
-          <IonButton 
-            expand="full"
-            size="small"
-            fill="clear"
-            onClick={() => {
+            <IonButton
+              expand="full"
+              size="small"
+              fill="clear"
+              onClick={() => {
                 setOpenChatMessagesModal(true);
                 setOpenMoreToolsOverlay(false);
               }}
@@ -1176,10 +1208,10 @@ const ConferenceRoom: React.FC = () => {
             >
               Messages
             </IonButton>
-          
-            <IonButton 
-            expand="full"
-            size="small"
+
+            <IonButton
+              expand="full"
+              size="small"
               fill="clear"
               style={{ justifyContent: "flex-start", textAlign: "left" }}
               className="icon-only"
@@ -1191,9 +1223,7 @@ const ConferenceRoom: React.FC = () => {
             >
               Participants<sub>{producingStreams.length + 1}</sub>
             </IonButton>
-            
           </div>
-          
         </IonPopover>
       </IonContent>
     </IonPage>

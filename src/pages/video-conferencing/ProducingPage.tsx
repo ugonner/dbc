@@ -1,4 +1,4 @@
-import { IonButton, IonItem, IonToolbar, useIonToast } from "@ionic/react";
+import { IonButton, IonCol, IonGrid, IonItem, IonRow, IonSpinner, IonText, IonToolbar, useIonToast } from "@ionic/react";
 import { CallVideo } from "../../components/video/CallVideo";
 import { RouteComponentProps, useHistory, useParams } from "react-router-dom";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
@@ -53,13 +53,38 @@ export const ProducingPage = (props: IProducingPageProps) => {
     })();
   }, []);
 
+  const [openJoinRequestSpinner, setOpenJinRequestSpinner] = useState(false);
+
 
   return (
     <div>
-      {showToolbar && (
+      <IonGrid>
+        <IonRow>
+          <IonCol sizeMd="6" sizeSm="12">
+            
+        <CallVideo
+          mediaStream={userMediaStream}
+        />
+        
+          </IonCol>
+          <IonCol sizeMd="6" sizeSm="12">
+            <h3>Have A Preview</h3>
+            <p>
+              Take a preview of your looks into this event.
+
+            </p>
+            <p>
+              When you are set to join click the "join" or "ask to join" button. 
+              If you clicked the "ask to join" button, Please wait for an admin to accept you into the event.
+              If no admin is present in the event, sorry you can not be admitted in.
+              
+            </p>
+
+            {showToolbar && (
         <IonToolbar>
           <IonItem>
             <IonButton
+            fill="clear"
               onClick={async () =>
                 toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff)
               }
@@ -68,28 +93,35 @@ export const ProducingPage = (props: IProducingPageProps) => {
             </IonButton>
 
             <IonButton
+            fill="clear"
               onClick={() => toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff)}
             >
               Toggle Video
             </IonButton>
 
             <IonButton
+            fill="clear"
               slot="end"
               onClick={ async () => {
                 if(props.joinHandler) await props.joinHandler();
+                if(!props.canJoin) setOpenJinRequestSpinner(true);
               }}
             >
-              {props.canJoin ? "Join" : "Ask to join"}
+              {props.canJoin && !openJoinRequestSpinner ? "Join" : "Ask to join"}
+              {openJoinRequestSpinner && (
+                <IonText>
+                  <IonSpinner></IonSpinner> Waiting...
+                </IonText>
+              )}
             </IonButton>
           </IonItem>
         </IonToolbar>
       )}
+          </IonCol>
+        </IonRow>
+      </IonGrid>
+      
 
-      <div style={{width: "480px", height: "auto"}}>
-        <CallVideo
-          mediaStream={userMediaStream}
-        />
-      </div>
     </div>
   );
 };

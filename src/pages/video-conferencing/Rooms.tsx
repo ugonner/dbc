@@ -45,6 +45,7 @@ export const Rooms: React.FC = () => {
                 <IonItem>
                   <IonLabel>{room.roomId}</IonLabel>
                   <IonButton
+                  fill="clear"
                     slot="end"
                     routerLink={`/conference/conference-room/${room.roomId}`}
                   >
