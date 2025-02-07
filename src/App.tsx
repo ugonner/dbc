@@ -97,7 +97,7 @@ const App: React.FC = () => (
                 <Route path={"/admin"} component={AdminBoard}></Route>
               </IonRouterOutlet>
 
-              <IonTabBar slot="bottom">
+              <IonTabBar slot="top">
                 <IonTabButton tab="hub" href="/hub">
                   <IonIcon aria-hidden="true" icon={ellipse} />
                   <IonLabel>Hub</IonLabel>

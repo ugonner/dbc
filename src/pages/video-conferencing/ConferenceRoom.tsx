@@ -866,30 +866,6 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
             
             
-            <IonButton 
-              size="large"
-              onClick={() => {
-                setOpenChatMessagesModal(true);
-                setOpenMoreToolsOverlay(false);
-              }}
-              aria-label="chat messages"
-              className="icon-only"
-            >
-              <IonIcon icon={chatbox}></IonIcon>
-            </IonButton>
-          
-            <IonButton 
-              fill="clear"
-              size="large"
-              className="icon-only"
-              onClick={() => {
-                setOpenUsersModal(true);
-                setOpenMoreToolsOverlay(false);
-              }}
-              aria-label="show participants"
-            >
-              <IonIcon icon={people} /> <sub>{producingStreams.length + 1}</sub>
-            </IonButton>
             {/* <Captioning producerUsers={producingStreams} /> */}
             
             <IonButton fill="clear"
@@ -1127,8 +1103,13 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setOpenMoreToolsOverlay(false)}
           trigger="more-tools-toggler"
         >
-          <IonItem>
-            <IonText role="button"
+          <div style={{maxHeight: "100px", padding: "10px", overflow: "auto", textAlign: "right"}}>
+            
+          <IonButton
+            expand="full"
+            size="small"
+            fill="clear"
+            style={{ justifyContent: "flex-start", textAlign: "left" }}
               onClick={() => {
                 setOpenReactionsActionSheet(!openReactionsActionSheet);
                 setOpenMoreToolsOverlay(false);
@@ -1137,11 +1118,13 @@ const ConferenceRoom: React.FC = () => {
               aria-label="react"
             >
               <IonText>React</IonText>
-            </IonText>
-          </IonItem>
+            </IonButton>
 
-          <IonItem>
-            <IonText role="button"
+            <IonButton
+            expand="full"
+            size="small"
+            fill="clear"
+            style={{ justifyContent: "flex-start", textAlign: "left" }}
               onClick={async () => {
                 try {
                   if (!navigator.mediaDevices)
@@ -1177,8 +1160,39 @@ const ConferenceRoom: React.FC = () => {
               aria-label="share screen"
             >
               <IonText>Share screen</IonText>
-            </IonText>
-          </IonItem>
+            </IonButton>
+
+          
+          <IonButton 
+            expand="full"
+            size="small"
+            fill="clear"
+            onClick={() => {
+                setOpenChatMessagesModal(true);
+                setOpenMoreToolsOverlay(false);
+              }}
+              aria-label="chat messages"
+              className="icon-only"
+            >
+              Messages
+            </IonButton>
+          
+            <IonButton 
+            expand="full"
+            size="small"
+              fill="clear"
+              style={{ justifyContent: "flex-start", textAlign: "left" }}
+              className="icon-only"
+              onClick={() => {
+                setOpenUsersModal(true);
+                setOpenMoreToolsOverlay(false);
+              }}
+              aria-label="show participants"
+            >
+              Participants<sub>{producingStreams.length + 1}</sub>
+            </IonButton>
+            
+          </div>
           
         </IonPopover>
       </IonContent>

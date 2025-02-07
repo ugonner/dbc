@@ -8,7 +8,7 @@ import { IonButton, IonIcon, IonItem, IonPopover, IonText, IonToast } from "@ion
 import { chatbox, closeCircle, diamondSharp } from "ionicons/icons";
 import { useAsyncHelpersContext } from "../../contexts/async-helpers";
 
-export const modelPath = `/models/vosk-model-small-en-us-0.15.zip`;
+export const modelPath = `/models/vosk-model-small-en-us-0.15.tgz`;
         
 export interface ICaptioningProps {
   producerUsers: IProducerUser[];
