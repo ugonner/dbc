@@ -25,6 +25,8 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   const [isCaptioning, setIsCaptioning] = useState(false);
   const [openCaptionsOverlay,   setOpenCaptionsOverlay] = useState(false);
   const [captions, setCaptions] = useState("");
+  const [partialCaptions, setPartialCaptioins] = useState("");
+
   const streamRef = useRef<MediaStream | null>();
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>();
   const mediaSourceRef = useRef<MediaStreamAudioSourceNode | null>();
@@ -201,11 +203,17 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
           const resultText = (message.event === "result") ? message.result.text : "";
           if(resultText){
             setCaptions(resultText);
+            setPartialCaptioins("");
             setOpenCaptionsOverlay(true);
           }
         });
         rec.on("partialresult", (message) => {
-          console.log(`Partial result: ${(message as any).result.partial}`);
+          const resultText = (message.event === "partialresult") ? message.result.partial : "";
+          
+          console.log(`Partial result: ${resultText}`);
+          setCaptions(`${partialCaptions} ${resultText}`);
+            setOpenCaptionsOverlay(true);
+          
         });
 
         recognizerRef.current = rec;
