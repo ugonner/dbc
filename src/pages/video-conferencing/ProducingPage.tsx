@@ -2,6 +2,7 @@ import {
   IonButton,
   IonCol,
   IonGrid,
+  IonIcon,
   IonItem,
   IonRow,
   IonSpinner,
@@ -19,6 +20,7 @@ import {
 } from "../../utils/rtc/mediasoup/functionalities";
 import { Socket } from "socket.io-client";
 import { BroadcastEvents } from "../../shared/enums/events.enum";
+import { mic, micOff, videocam, videocamOff } from "ionicons/icons";
 
 export interface IProducingPageProps {
   joinHandler?: Function;
@@ -32,6 +34,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
     videoTurnedOff,
     setVideoTurnedOff,
     setAudioTurnedOff,
+    audioTurnedOff,
     producerAppDataRef,
   } = useRTCToolsContextStore();
   const [presentToast] = useIonToast();
@@ -89,35 +92,36 @@ export const ProducingPage = (props: IProducingPageProps) => {
                 <IonItem>
                   <IonButton
                     fill="clear"
+                    size="large"
                     onClick={async () => {
                       toggleAudio(
                         userMediaStream as MediaStream,
                         setAudioTurnedOff
                       );
-                      const isAudioTurnedOff =
-                        !producerAppDataRef.current.isAudioTurnedOff;
                       producerAppDataRef.current = {
                         ...producerAppDataRef.current,
-                        isAudioTurnedOff,
+                        isAudioTurnedOff: audioTurnedOff,
                       };
                     }}
+                    aria-label={audioTurnedOff ? "turn audio on": "turn audio off"}
                   >
-                    Toggle Audio
+                    <IonIcon icon={audioTurnedOff ? mic : micOff}></IonIcon>
                   </IonButton>
 
                   <IonButton
                     fill="clear"
+                    size="large"
                     onClick={() => {
                       toggleVIdeo(
                         userMediaStream as MediaStream,
                         setVideoTurnedOff
                       );
-                      const isVideoTurnedOff = !producerAppDataRef.current.isVideoTurnedOff;
-                      producerAppDataRef.current = {...producerAppDataRef.current, isVideoTurnedOff}
+                      producerAppDataRef.current = {...producerAppDataRef.current, isVideoTurnedOff: videoTurnedOff}
                       
                     }}
+                    aria-label={videoTurnedOff ? "turn video on": "turn video off"}
                   >
-                    Toggle Video
+                    <IonIcon icon={videoTurnedOff ? videocam : videocamOff}></IonIcon>
                   </IonButton>
 
                   <IonButton
@@ -128,7 +132,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
                       if (!props.canJoin) setOpenJinRequestSpinner(true);
                     }}
                   >
-                    {props.canJoin && !openJoinRequestSpinner
+                    {props.canJoin && (!openJoinRequestSpinner)
                       ? "Join"
                       : "Ask to join"}
                     {openJoinRequestSpinner && (
