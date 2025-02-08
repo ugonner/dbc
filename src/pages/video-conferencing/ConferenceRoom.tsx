@@ -117,6 +117,7 @@ import {
 } from "../../components/conference-room/RoomMessages";
 import { Caption } from "../../components/video/Caption";
 import { Captioning } from "../../components/conference-room/Captioning";
+import { audioSampleRate } from "../talkable/VoiceMessaging";
 
 const ConferenceRoom: React.FC = () => {
   const [ariaAssertiveNotification, setAriaAssertiveNotification] =
@@ -215,8 +216,12 @@ const ConferenceRoom: React.FC = () => {
         const socketInit = io(`${socketIOBaseURL}`);
         setSocket(socketInit as Socket & Dispatch<Socket>);
         socketInit.on(BroadcastEvents.JOIN_REQUEST_ACCEPTED, async () => {
-          await setUp(socketInit);
+          try{
+            await setUp(socketInit);
           await setShowModalText("");
+          }catch(error){
+            console.log("Set up error", (error))
+          }
         });
         socketInit.on(BroadcastEvents.JOIN_REQUEST_REJECTEDD, async () => {
           setAriaAssertiveNotification(
@@ -249,12 +254,12 @@ const ConferenceRoom: React.FC = () => {
     setShowModalText("");
     await joinRoom(socketInit, { room: roomId, userId, userName, avatar });
     const device = await createDevice(socketInit, roomId);
-    console.log("device capa", device.rtpCapabilities);
     const consumerTransport = await createConsumerTransport(
       socketInit,
       device,
       roomId
     );
+
     const producerTransport = await createProducerTransport(
       socketInit,
       device,
@@ -496,8 +501,16 @@ const ConferenceRoom: React.FC = () => {
       }
     );
 
-    await startProducing(producerTransport, userMediaStream as MediaStream);
-
+    const mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: {
+        channelCount: 1,
+        sampleRate: audioSampleRate,
+        echoCancellation: true,
+        noiseSuppression: true
+      }
+    });
+    await startProducing(producerTransport, mediaStream);
     const roomContext: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
         BroadcastEvents.GET_ROOM_CONTEXT,

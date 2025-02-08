@@ -3,6 +3,7 @@ import { ClientEvents } from "../../../shared/enums/events.enum";
 import { IApiResponse } from "../../../shared/dtos/responses/api-response";
 import { IProducers } from "../../../shared/interfaces/socket-user";
 import { DataProducer, Producer, Transport } from "mediasoup-client/lib/types";
+import { audioSampleRate } from "../../../pages/talkable/VoiceMessaging";
 
 export async function getAllRoomProducers(socket: Socket, room: string): Promise<IProducers> {
     return new Promise((resolve, reject) => {
@@ -24,6 +25,7 @@ export async function getAllRoomProducers(socket: Socket, room: string): Promise
     mediaStream: MediaStream
   ): Promise<{audioProducer: Producer, videoProducer: Producer} | undefined> {
     try {
+      
       const videoTrack = mediaStream.getVideoTracks()[0];
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoProducer = await sendingTransport.produce({
