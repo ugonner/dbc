@@ -25,7 +25,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   const [isCaptioning, setIsCaptioning] = useState(false);
   const [openCaptionsOverlay,   setOpenCaptionsOverlay] = useState(false);
   const [captions, setCaptions] = useState("");
-  const [partialCaptions, setPartialCaptioins] = useState("");
+  const [partialCaptions, setPartialCaptioins] = useState<string[]>([]);
 
   const streamRef = useRef<MediaStream | null>();
   const scriptProcessorRef = useRef<ScriptProcessorNode | null>();
@@ -200,20 +200,23 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
         const rec = new modell.KaldiRecognizer(sampleRate);
         
         rec.on("result", (message) => {
+          console.log("final result");
           const resultText = (message.event === "result") ? message.result.text : "";
-          if(resultText){
+          if(resultText && resultText.trim()){
             setCaptions(resultText);
-            setPartialCaptioins("");
-            setOpenCaptionsOverlay(true);
+            setPartialCaptioins([]);
           }
+          setOpenCaptionsOverlay(true);
+          
         });
         rec.on("partialresult", (message) => {
           const resultText = (message.event === "partialresult") ? message.result.partial : "";
           
           console.log(`Partial result: ${resultText}`);
-          setPartialCaptioins(resultText);
-          setCaptions(`${partialCaptions} ${resultText}`);
-            setOpenCaptionsOverlay(true);
+          setPartialCaptioins([...partialCaptions, resultText]);
+          setCaptions(`${partialCaptions.join(" ")} ${resultText}`);
+            
+          if(partialCaptions.length > 0 && partialCaptions.length % 10 === 0) setOpenCaptionsOverlay(true);
           
         });
 
