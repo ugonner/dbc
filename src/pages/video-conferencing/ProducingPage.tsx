@@ -1,4 +1,14 @@
-import { IonButton, IonCol, IonGrid, IonItem, IonRow, IonSpinner, IonText, IonToolbar, useIonToast } from "@ionic/react";
+import {
+  IonButton,
+  IonCol,
+  IonGrid,
+  IonItem,
+  IonRow,
+  IonSpinner,
+  IonText,
+  IonToolbar,
+  useIonToast,
+} from "@ionic/react";
 import { CallVideo } from "../../components/video/CallVideo";
 import { RouteComponentProps, useHistory, useParams } from "react-router-dom";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
@@ -12,7 +22,7 @@ import { BroadcastEvents } from "../../shared/enums/events.enum";
 
 export interface IProducingPageProps {
   joinHandler?: Function;
-  canJoin: boolean
+  canJoin: boolean;
 }
 
 export const ProducingPage = (props: IProducingPageProps) => {
@@ -22,28 +32,30 @@ export const ProducingPage = (props: IProducingPageProps) => {
     videoTurnedOff,
     setVideoTurnedOff,
     setAudioTurnedOff,
+    producerAppDataRef,
   } = useRTCToolsContextStore();
   const [presentToast] = useIonToast();
   const [showToolbar, setShowTaskbar] = useState(false);
-  
+
   useEffect(() => {
     (async () => {
       try {
-       
-      if(!navigator.mediaDevices) throw new Error("Your device does not support media sharing");
-      const mediaStream = await navigator.mediaDevices?.getUserMedia({
-        video: true,
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          channelCount: 1,
-          sampleRate: 16000
-        },
-      }); 
-        if(mediaStream) setUserMediaStream(
-              mediaStream as MediaStream & Dispatch<MediaStream>
-            );
-        
+        if (!navigator.mediaDevices)
+          throw new Error("Your device does not support media sharing");
+        const mediaStream = await navigator.mediaDevices?.getUserMedia({
+          video: true,
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            channelCount: 1,
+            sampleRate: 16000,
+          },
+        });
+        if (mediaStream)
+          setUserMediaStream(
+            mediaStream as MediaStream & Dispatch<MediaStream>
+          );
+
         setShowTaskbar(true);
       } catch (error) {
         console.log("Error starting producing", (error as Error).message);
@@ -55,73 +67,82 @@ export const ProducingPage = (props: IProducingPageProps) => {
 
   const [openJoinRequestSpinner, setOpenJinRequestSpinner] = useState(false);
 
-
   return (
     <div>
       <IonGrid>
         <IonRow>
           <IonCol sizeMd="6" sizeSm="12">
-            
-        <CallVideo
-          mediaStream={userMediaStream}
-        />
-        
+            <CallVideo mediaStream={userMediaStream} />
           </IonCol>
           <IonCol sizeMd="6" sizeSm="12">
             <h3>Have A Preview</h3>
+            <p>Take a preview of your looks into this event.</p>
             <p>
-              Take a preview of your looks into this event.
-
-            </p>
-            <p>
-              When you are set to join click the "join" or "ask to join" button. 
-              If you clicked the "ask to join" button, Please wait for an admin to accept you into the event.
-              If no admin is present in the event, sorry you can not be admitted in.
-              
+              When you are set to join click the "join" or "ask to join" button.
+              If you clicked the "ask to join" button, Please wait for an admin
+              to accept you into the event. If no admin is present in the event,
+              sorry you can not be admitted in.
             </p>
 
             {showToolbar && (
-        <IonToolbar>
-          <IonItem>
-            <IonButton
-            fill="clear"
-              onClick={async () =>
-                toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff)
-              }
-            >
-              Toggle Audio
-            </IonButton>
+              <IonToolbar>
+                <IonItem>
+                  <IonButton
+                    fill="clear"
+                    onClick={async () => {
+                      toggleAudio(
+                        userMediaStream as MediaStream,
+                        setAudioTurnedOff
+                      );
+                      const isAudioTurnedOff =
+                        !producerAppDataRef.current.isAudioTurnedOff;
+                      producerAppDataRef.current = {
+                        ...producerAppDataRef.current,
+                        isAudioTurnedOff,
+                      };
+                    }}
+                  >
+                    Toggle Audio
+                  </IonButton>
 
-            <IonButton
-            fill="clear"
-              onClick={() => toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff)}
-            >
-              Toggle Video
-            </IonButton>
+                  <IonButton
+                    fill="clear"
+                    onClick={() => {
+                      toggleVIdeo(
+                        userMediaStream as MediaStream,
+                        setVideoTurnedOff
+                      );
+                      const isVideoTurnedOff = !producerAppDataRef.current.isVideoTurnedOff;
+                      producerAppDataRef.current = {...producerAppDataRef.current, isVideoTurnedOff}
+                      
+                    }}
+                  >
+                    Toggle Video
+                  </IonButton>
 
-            <IonButton
-            fill="clear"
-              slot="end"
-              onClick={ async () => {
-                if(props.joinHandler) await props.joinHandler();
-                if(!props.canJoin) setOpenJinRequestSpinner(true);
-              }}
-            >
-              {props.canJoin && !openJoinRequestSpinner ? "Join" : "Ask to join"}
-              {openJoinRequestSpinner && (
-                <IonText>
-                  <IonSpinner></IonSpinner> Waiting...
-                </IonText>
-              )}
-            </IonButton>
-          </IonItem>
-        </IonToolbar>
-      )}
+                  <IonButton
+                    fill="clear"
+                    slot="end"
+                    onClick={async () => {
+                      if (props.joinHandler) await props.joinHandler();
+                      if (!props.canJoin) setOpenJinRequestSpinner(true);
+                    }}
+                  >
+                    {props.canJoin && !openJoinRequestSpinner
+                      ? "Join"
+                      : "Ask to join"}
+                    {openJoinRequestSpinner && (
+                      <IonText>
+                        <IonSpinner></IonSpinner> Waiting...
+                      </IonText>
+                    )}
+                  </IonButton>
+                </IonItem>
+              </IonToolbar>
+            )}
           </IonCol>
         </IonRow>
       </IonGrid>
-      
-
     </div>
   );
 };

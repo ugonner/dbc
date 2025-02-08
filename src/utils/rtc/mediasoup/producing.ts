@@ -2,8 +2,9 @@ import { Socket } from "socket.io-client";
 import { ClientEvents } from "../../../shared/enums/events.enum";
 import { IApiResponse } from "../../../shared/dtos/responses/api-response";
 import { IProducers } from "../../../shared/interfaces/socket-user";
-import { DataProducer, Producer, Transport } from "mediasoup-client/lib/types";
+import { AppData, DataProducer, Producer, Transport } from "mediasoup-client/lib/types";
 import { audioSampleRate } from "../../../pages/talkable/VoiceMessaging";
+import { IProducerAppData } from "../../../shared/dtos/requests/signals";
 
 export async function getAllRoomProducers(socket: Socket, room: string): Promise<IProducers> {
     return new Promise((resolve, reject) => {
@@ -22,7 +23,8 @@ export async function getAllRoomProducers(socket: Socket, room: string): Promise
   
   export async function startProducing(
     sendingTransport: Transport,
-    mediaStream: MediaStream
+    mediaStream: MediaStream,
+    producerAppData: IProducerAppData
   ): Promise<{audioProducer: Producer, videoProducer: Producer} | undefined> {
     try {
       
@@ -30,9 +32,11 @@ export async function getAllRoomProducers(socket: Socket, room: string): Promise
       const audioTrack = mediaStream.getAudioTracks()[0];
       const videoProducer = await sendingTransport.produce({
         track: videoTrack,
+        appData: producerAppData as AppData
       });
       const audioProducer = await sendingTransport.produce({
         track: audioTrack,
+        appData: producerAppData as AppData
       });
       return {videoProducer, audioProducer};
     } catch (error) {

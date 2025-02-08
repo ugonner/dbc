@@ -27,7 +27,6 @@ export async function createDevice(socket: Socket, room: string): Promise<Device
 
  export async function createProducerTransport(socket: Socket, device: Device, room: string, config: {isAudioTurnedOff: boolean; isVideoTurnedOff: boolean;} ): Promise<Transport> {
     const isProducer = true;
-    const {isAudioTurnedOff, isVideoTurnedOff} = config;
     const dto: createTransportDTO = { room, isProducer };
     const res: IApiResponse<CreatedTransportDTO> = await new Promise(
       (resolve) => {
@@ -65,11 +64,11 @@ export async function createDevice(socket: Socket, room: string): Promise<Device
           ...data,
           room,
           transportId: transportInit.id,
-          isAudioTurnedOff,
-          isVideoTurnedOff,
           appData: {
             mediaKind:  data.appData?.mediaKind ?  (data.appData?.mediaKind as "video" | "audio") : data.kind,
-            isScreenShare: data.appData?.isScreenShare ?  (data.appData?.isScreenShare as boolean) : false 
+            isScreenShare: data.appData?.isScreenShare ?  (data.appData?.isScreenShare as boolean) : false,
+            isVideoTurnedOff: data.appData?.isVideoTurnedOff ? true : false,
+            isAudioTurnedOff: data.appData?.isAudioTurnedOff ? true : false
           }
         };
         const res: IApiResponse<{ id: string }> = await new Promise(

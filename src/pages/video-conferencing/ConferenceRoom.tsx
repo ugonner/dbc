@@ -197,6 +197,7 @@ const ConferenceRoom: React.FC = () => {
     setSubTitles,
     showModalText,
     setShowModalText,
+    producerAppDataRef
   } = useRTCToolsContextStore();
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
@@ -510,7 +511,7 @@ const ConferenceRoom: React.FC = () => {
         noiseSuppression: true
       }
     });
-    await startProducing(producerTransport, mediaStream);
+    await startProducing(producerTransport, mediaStream, producerAppDataRef.current);
     const roomContext: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
         BroadcastEvents.GET_ROOM_CONTEXT,
@@ -741,6 +742,9 @@ const ConferenceRoom: React.FC = () => {
     socket?.disconnect();
     setSocket(undefined);
     stopMediaTracks(userMediaStream as MediaStream);
+    producingStreams.forEach((producerUser) => {
+      producerUser.mediaStream?.getTracks().forEach((track) => track.stop())
+    })
     setUserMediaStream({} as MediaStream & Dispatch<MediaStream>);
     setConsumerTransport(null as unknown as Transport);
     setProducerTransport(null as unknown as Transport);

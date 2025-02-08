@@ -25,18 +25,19 @@ export interface ConnectTransportDTO {
     room: string;
     isProducer: boolean;
 }
+export interface IProducerAppData {
+    mediaKind?: "audio" | "video" | "data";
+    isScreenShare?: boolean;
+    isVideoTurnedOff?: boolean;
+    isAudioTurnedOff?: boolean;
+}
 
 export interface CreateProducerDTO{
     rtpParameters: MediaSoup.types.RtpParameters;
     kind: MediaSoup.types.MediaKind;
     transportId: string;
     room: string;
-    isAudioTurnedOff: boolean;
-    isVideoTurnedOff: boolean;
-    appData: {
-        mediaKind: "audio" | "video" | "data";
-        isScreenShare: boolean;
-    }
+    appData: IProducerAppData
 }
 export interface CreateDataProducerDTO{
     sctpStreamParameters: SctpStreamParameters,
