@@ -211,6 +211,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
           const resultText = (message.event === "partialresult") ? message.result.partial : "";
           
           console.log(`Partial result: ${resultText}`);
+          setPartialCaptioins(resultText);
           setCaptions(`${partialCaptions} ${resultText}`);
             setOpenCaptionsOverlay(true);
           
