@@ -32,6 +32,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   const mediaSourceRef = useRef<MediaStreamAudioSourceNode | null>();
   const {setLoading} = useAsyncHelpersContext();
 
+  
   const startCaptioning = async (producers: IProducerUser[]) => {
     try {
       const stream = new MediaStream();
@@ -200,9 +201,9 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
         const rec = new modell.KaldiRecognizer(sampleRate);
         
         rec.on("result", (message) => {
-          console.log("final result");
           const resultText = (message.event === "result") ? message.result.text : "";
-          if(resultText && resultText.trim()){
+          if(resultText && resultText.trim() !== ""){
+            console.log("final result", resultText);
             setCaptions(resultText);
             setPartialCaptioins([]);
           }
@@ -245,7 +246,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
       >
         <IonText>{isCaptioning ? "Turn off captions" : "Turn on Ccaptions"}</IonText>
       </IonButton>
-      <IonPopover
+      {/* <IonPopover
       isOpen={openCaptionsOverlay}
       onDidDismiss={() => setOpenCaptionsOverlay(false)}
       translate="yes"
@@ -266,15 +267,17 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
         <p>
         {captions}
         </p>
-      </IonPopover>
+      </IonPopover> */}
       {/* uses toast's duration to dismiss popover  */}
       <IonToast
       isOpen={openCaptionsOverlay}
+      message={captions}
+      color={"dark"}
       position="bottom"
-      duration={10000}
       onDidDismiss={() => setOpenCaptionsOverlay(false)}
       translucent={true}
-      ></IonToast>
+      >
+       </IonToast>
     </div>
   );
 };

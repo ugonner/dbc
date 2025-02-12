@@ -103,9 +103,11 @@ export const ProducingPage = (props: IProducingPageProps) => {
                         isAudioTurnedOff: audioTurnedOff,
                       };
                     }}
-                    aria-label={audioTurnedOff ? "turn audio on": "turn audio off"}
+                    aria-label={
+                      audioTurnedOff ? "turn audio on" : "turn audio off"
+                    }
                   >
-                    <IonIcon icon={audioTurnedOff ? mic : micOff}></IonIcon>
+                    <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
                   </IonButton>
 
                   <IonButton
@@ -116,12 +118,18 @@ export const ProducingPage = (props: IProducingPageProps) => {
                         userMediaStream as MediaStream,
                         setVideoTurnedOff
                       );
-                      producerAppDataRef.current = {...producerAppDataRef.current, isVideoTurnedOff: videoTurnedOff}
-                      
+                      producerAppDataRef.current = {
+                        ...producerAppDataRef.current,
+                        isVideoTurnedOff: videoTurnedOff,
+                      };
                     }}
-                    aria-label={videoTurnedOff ? "turn video on": "turn video off"}
+                    aria-label={
+                      videoTurnedOff ? "turn video on" : "turn video off"
+                    }
                   >
-                    <IonIcon icon={videoTurnedOff ? videocam : videocamOff}></IonIcon>
+                    <IonIcon
+                      icon={videoTurnedOff ? videocamOff : videocam}
+                    ></IonIcon>
                   </IonButton>
 
                   <IonButton
@@ -132,14 +140,13 @@ export const ProducingPage = (props: IProducingPageProps) => {
                       if (!props.canJoin) setOpenJinRequestSpinner(true);
                     }}
                   >
-                    {props.canJoin && (!openJoinRequestSpinner)
-                      ? "Join"
-                      : "Ask to join"}
-                    {openJoinRequestSpinner && (
-                      <IonText>
-                        <IonSpinner></IonSpinner> Waiting...
-                      </IonText>
-                    )}
+                    <small>
+                      {props.canJoin
+                        ? "Join"
+                        : !openJoinRequestSpinner
+                        ? "Ask to join"
+                        : "waiting to be admitted..."}
+                    </small>
                   </IonButton>
                 </IonItem>
               </IonToolbar>

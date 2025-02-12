@@ -18,9 +18,10 @@ import {
   IonToolbar,
   useIonAlert,
   useIonModal,
+  useIonRouter,
   useIonToast,
-  useIonViewDidEnter,
   useIonViewWillEnter,
+  useIonViewWillLeave,
 } from "@ionic/react";
 import ExploreContainer from "../../components/ExploreContainer";
 import { Dispatch, useEffect, useRef, useState } from "react";
@@ -103,6 +104,7 @@ import {
   ellipsisVertical,
   ellipsisHorizontal,
   closeCircle,
+  navigate,
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -118,6 +120,9 @@ import {
 import { Caption } from "../../components/video/Caption";
 import { Captioning } from "../../components/conference-room/Captioning";
 import { audioSampleRate } from "../talkable/VoiceMessaging";
+import { App } from "@capacitor/app";
+import { PluginListenerHandle } from "@capacitor/core";
+import { defaultUserImageUrl } from "../../shared/DATASETS/defaults";
 
 const ConferenceRoom: React.FC = () => {
   const [ariaAssertiveNotification, setAriaAssertiveNotification] =
@@ -140,11 +145,14 @@ const ConferenceRoom: React.FC = () => {
     avatar: queryParams.get("avatar"),
   };
 
+  const userProfile = (user.profile || userFromQuery) as IProfile;
+  userProfile.avatar = userProfile.avatar || defaultUserImageUrl;
+
   const {
     userId,
     firstName: userName,
     avatar,
-  } = (user.profile || userFromQuery) as IProfile;
+  } = userProfile;
   const [producingStreams, setProducingStreams] = useState(
     [] as IProducerUser[]
   );
@@ -197,7 +205,8 @@ const ConferenceRoom: React.FC = () => {
     setSubTitles,
     showModalText,
     setShowModalText,
-    producerAppDataRef
+    producerAppDataRef,
+    currentRoomRef
   } = useRTCToolsContextStore();
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
@@ -211,9 +220,32 @@ const ConferenceRoom: React.FC = () => {
   const [presentModal, dismissModal] = useIonModal(ProducingPage);
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
+
+  
+    useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "Are you sure you want to leave?"; // Show a browser confirmation.
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  useIonViewWillLeave(() => {
+    if(currentRoomRef.current === roomId) {
+      presentToast(`If you intend to dismiss a view, Use the close (x) button at the top right corner of the view`, 4000);
+      navigation.push(`/conference/conference-room/${roomId}`);
+      return
+    }
+  })
   useIonViewWillEnter(() => {
     (async () => {
       try {
+        if(currentRoomRef.current === roomId) return;
+
+
+
         const socketInit = io(`${socketIOBaseURL}`);
         setSocket(socketInit as Socket & Dispatch<Socket>);
         socketInit.on(BroadcastEvents.JOIN_REQUEST_ACCEPTED, async () => {
@@ -511,7 +543,12 @@ const ConferenceRoom: React.FC = () => {
         noiseSuppression: true
       }
     });
+
     await startProducing(producerTransport, mediaStream, producerAppDataRef.current);
+    mediaStream.getAudioTracks()[0].enabled = producerAppDataRef.current.isAudioTurnedOff ? true: false;
+    mediaStream.getVideoTracks()[0].enabled = producerAppDataRef.current.isVideoTurnedOff ? true: false;
+    setUserMediaStream(mediaStream);
+
     const roomContext: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
         BroadcastEvents.GET_ROOM_CONTEXT,
@@ -543,6 +580,9 @@ const ConferenceRoom: React.FC = () => {
     if (canJoin?.isSpecialPresenter) {
       await setAsRoomSpecialPresenter(socketInit, roomId);
     }
+
+    //AT END OF SETUP
+    currentRoomRef.current = roomId;
   }
 
   async function setAsRoomSpecialPresenter(socket: Socket, room: string) {
@@ -750,6 +790,7 @@ const ConferenceRoom: React.FC = () => {
     setProducerTransport(null as unknown as Transport);
     setRoomContext(undefined);
     setDevice(null as unknown as Device);
+    currentRoomRef.current = "";
     navigation.push("/conference/rooms");
   }
   return (
@@ -816,7 +857,7 @@ const ConferenceRoom: React.FC = () => {
         </IonGrid>
         <IonToolbar>
           <IonItem>
-            <div slot="start" style={{ width: "10%" }}>
+            <div slot="start" style={{ width: "20%" }}>
               <CallVideo
                 socket={socket as Socket}
                 room={roomId}
@@ -827,7 +868,7 @@ const ConferenceRoom: React.FC = () => {
             {openSpecialPresenter &&
               roomContext?.specialPresenterSocketId &&
               specialPresnterStream && (
-                <div slot="end" style={{ width: "10%" }}>
+                <div slot="end" style={{ width: "20%" }}>
                   <IonItem>
                     <IonText
                       role="button"
@@ -916,6 +957,7 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
           </IonItem>
         </IonToolbar>
+        <div id="separator" style={{height: "60px"}}></div>
 
         <IonModal
           isOpen={showModalText === `room-${roomId}`}
