@@ -140,13 +140,12 @@ export const ProducingPage = (props: IProducingPageProps) => {
                       if (!props.canJoin) setOpenJinRequestSpinner(true);
                     }}
                   >
-                    <small>
                       {props.canJoin
                         ? "Join"
                         : !openJoinRequestSpinner
                         ? "Ask to join"
                         : "waiting to be admitted..."}
-                    </small>
+                    
                   </IonButton>
                 </IonItem>
               </IonToolbar>
