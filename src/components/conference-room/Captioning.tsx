@@ -143,10 +143,12 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
 
   const stopCaptioning = async () => {
     try{
+      setOpenCaptionsOverlay(false);
       await closeOut();
       captionsRef.current = [];
       setCaptions("");
-      setIsCaptioning(false);  
+      setIsCaptioning(false); 
+      
     }catch(error){
       console.log("Error stopping captioning", (error as Error).message);
     }

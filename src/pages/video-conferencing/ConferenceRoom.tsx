@@ -545,8 +545,6 @@ const ConferenceRoom: React.FC = () => {
     });
 
     await startProducing(producerTransport, mediaStream, producerAppDataRef.current);
-    mediaStream.getAudioTracks()[0].enabled = producerAppDataRef.current.isAudioTurnedOff ? true: false;
-    mediaStream.getVideoTracks()[0].enabled = producerAppDataRef.current.isVideoTurnedOff ? true: false;
     setUserMediaStream(mediaStream);
 
     const roomContext: IRoomContext = await new Promise((resolve) => {
@@ -1053,6 +1051,18 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setOpenUsersModal(false)}
           backdropDismiss={true}
         >
+          
+          <IonItem>
+            <IonButton
+            fill="clear"
+            slot="end"
+            className="icon-only"
+          onClick={() => setOpenUsersModal(false)}
+            aria-label="close modal"
+            >
+              <IonIcon icon={closeCircle} />
+            </IonButton>
+            </IonItem>
           <RoomParticipants
             roomParticipants={producingStreams}
             socket={socket as Socket}
@@ -1151,7 +1161,7 @@ const ConferenceRoom: React.FC = () => {
                 onClick={() => setOpenChatMessagesModal(false)}
                 aria-label="close"
               >
-                <IonIcon icon={close}></IonIcon>
+                <IonIcon icon={closeCircle}></IonIcon>
               </IonText>
             </IonItem>
             <RoomMessages
