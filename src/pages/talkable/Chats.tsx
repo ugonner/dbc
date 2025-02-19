@@ -20,8 +20,6 @@ import {
   IonToolbar,
   useIonAlert,
 } from "@ionic/react";
-import { io } from "socket.io-client";
-import { socketIOBaseURL } from "../../api/base";
 import {
   IChat,
   IChatMessage,

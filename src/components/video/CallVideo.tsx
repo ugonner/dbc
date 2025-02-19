@@ -25,6 +25,7 @@ import { DataProducer } from "mediasoup-client/lib/DataProducer";
 import { APIBaseURL, postData } from "../../api/base";
 import { closeCircle } from "ionicons/icons";
 import { defaultUserImageUrl } from "../../shared/DATASETS/defaults";
+import { IProducerUser } from "../../shared/interfaces/socket-user";
 
 export interface ICallVideoProps extends VideoHTMLAttributes<HTMLVideoElement> {
   mediaStream?: MediaStream;
@@ -37,7 +38,7 @@ export const CallVideo = (props: ICallVideoProps) => {
   const storedUser = localStorage.getItem("user");
   const user: IAuthUserProfile = storedUser ? JSON.parse(storedUser) : {};
   let { mediaStream, socket, room, dataProducer, ...videoProps } = props;
-  const { videoTurnedOff, userMediaStream, userReactionsState } =
+  const { videoTurnedOff, userMediaStream, userReactionsState, setPinnedProducerUser } =
     useRTCToolsContextStore();
 
   const videoRef = useRef({} as HTMLVideoElement);
@@ -108,7 +109,16 @@ export const CallVideo = (props: ICallVideoProps) => {
     setUp();
   }, [userMediaStream]);
   return (
-    <div>
+    <div onDoubleClick={() => {
+      const producer: IProducerUser = {
+        isVideoTurnedOff: videoTurnedOff,
+        mediaStream: userMediaStream,
+        userName: user.profile?.userId,
+        avatar: user.profile?.avatar
+      } as IProducerUser;
+
+      setPinnedProducerUser(producer);
+    }}>
       {videoTurnedOff && (
         <div>
           <IonItem color={"light"}>

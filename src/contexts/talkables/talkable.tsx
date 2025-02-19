@@ -20,7 +20,6 @@ import {
   CommunicationModeEnum,
   LocalStorageKeys,
 } from "../../shared/enums/talkables/talkables.enum";
-import { APIBaseURL, TalkableSocketBaseURL } from "../../api/base";
 import { useHistory } from "react-router";
 import { useIonToast } from "@ionic/react";
 import { Model } from "vosk-browser";
@@ -31,6 +30,8 @@ import {
 import * as wav from "wav";
 import * as bufferToStream from "buffer-to-stream";
 import { modelPath } from "../../components/conference-room/Captioning";
+import { APIBaseURL, appPort, getData, serverPort, TalkableSocketBaseURL } from "../../api/base";
+import { IApiResponse } from "../../shared/dtos/responses/api-response";
 
 export interface IStatusOverlayOptions {
   openOverlay: boolean;
@@ -319,7 +320,15 @@ export const TalkableContextProvider = ({
 
   const [talkablePage, setTalkablePage] = useState(TalkablePage.CHATS);
   const [chatRoomMessages, setChatRoomMessges] = useState<IChatMessage[]>([]);
+  useEffect(() => {
+    const setSocketURL = async () => {
+      if(!/localhost/i.test(window.location.hostname)) return;
 
+      const res = await getData<{ipAddress: string}>(`${APIBaseURL.replace("http:", "https:")}/auth/host-ip`);
+      window.location.href = `https://${res.ipAddress}:${appPort}`
+    }
+    setSocketURL();
+  }, [])
   const initTalkableContextProps: ITalkableProps = {
     chats,
     setChats,

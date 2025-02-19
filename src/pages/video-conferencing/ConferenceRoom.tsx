@@ -197,6 +197,7 @@ const ConferenceRoom: React.FC = () => {
     accessibilityPreferences,
     setAccessibilityPreferences,
     pinnedProducerUser,
+    setPinnedProducerUser,
     setChatMessages,
     chatMessages,
     roomContext,
@@ -828,11 +829,6 @@ const ConferenceRoom: React.FC = () => {
               <h4 className="sr-only">Screen is sharing</h4>
               <ConsumingVideo mediaStream={screenSharingStream} />
             </div>
-          ) : pinnedProducerUser ? (
-            <ConsumingVideo
-              mediaStream={pinnedProducerUser.mediaStream}
-              producerUser={pinnedProducerUser}
-            />
           ) : (
             <></>
           )}
@@ -1294,6 +1290,27 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
           </div>
         </IonPopover>
+        <IonModal
+        isOpen={pinnedProducerUser ? true : false}
+        onDidDismiss={() => setPinnedProducerUser(null)}
+        >
+          <IonItem>
+            <IonButton
+            fill="clear"
+            slot="end"
+            onClick={() => setPinnedProducerUser(null)}
+            aria-label="close zoomed user"
+            >
+              <IonIcon icon={closeCircle}></IonIcon>
+            </IonButton>
+          </IonItem>
+          <div style={{justifyContent: "center", width: "400px"}}>
+            <ConsumingVideo
+            producerUser={pinnedProducerUser as IProducerUser}
+            mediaStream={pinnedProducerUser?.mediaStream}
+            />
+          </div>
+        </IonModal>
       </IonContent>
     </IonPage>
   );

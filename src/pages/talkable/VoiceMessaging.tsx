@@ -17,10 +17,11 @@ import { useTalkableContextStore } from "../../contexts/talkables/talkable";
 import { IChat, IChatMessage, IChatUser, IMessageAttachment } from "../../shared/interfaces/talkables/chat";
 import { TalkableChatEvents } from "../../shared/enums/talkables/chat-event.enum";
 import audioBufferToWav from "audiobuffer-to-wav";
-import { APIBaseURL } from "../../api/base";
+
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
 import { useAsyncHelpersContext } from "../../contexts/async-helpers";
 import { modelPath } from "../../components/conference-room/Captioning";
+import { APIBaseURL } from "../../api/base";
         
 export interface IVoiceMessagingProps {
   chat: IChat;

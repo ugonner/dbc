@@ -18,6 +18,8 @@ export interface ICallVideoProps extends VideoHTMLAttributes<HTMLVideoElement> {
   producerUser?: IProducerUser;
 }
 export const ConsumingVideo = ({ producerUser, ...props }: ICallVideoProps) => {
+  const {setPinnedProducerUser} = useRTCToolsContextStore();
+
   let { mediaStream, containerHeight, containerWidth, ...videoProps } = props;
   const userReactions = producerUser
     ? Object.keys(userReactionsEmojis).filter(
@@ -36,7 +38,7 @@ export const ConsumingVideo = ({ producerUser, ...props }: ICallVideoProps) => {
   return (
     <div>
       {producerUser?.isVideoTurnedOff && (
-        <div>
+        <div onDoubleClick={() => setPinnedProducerUser(producerUser)}>
           <IonItem>
             <IonThumbnail>
               <img

@@ -32,8 +32,8 @@ export interface IRTCTools {
     setUserReactionsState: Dispatch<SetStateAction<IUserReactions>>,
     accessibilityPreferences: IAccessibilityPreferences,
     setAccessibilityPreferences: Dispatch<SetStateAction<IAccessibilityPreferences>>,
-    pinnedProducerUser: IProducerUser | undefined;
-    setPinnedProducerUser: Dispatch<SetStateAction<IProducerUser | undefined>>;
+    pinnedProducerUser: IProducerUser | null;
+    setPinnedProducerUser: Dispatch<SetStateAction<IProducerUser | null>>;
     chatMessages: IRoomMessage[];
     setChatMessages: Dispatch<SetStateAction<IRoomMessage[]>>
     subTitles: IRoomMessage[];
@@ -60,7 +60,7 @@ export const RTCToolsProvider = ({children}: PropsWithChildren) => {
     const [audioTurnedOff, setAudioTurnedOff] = useState(false);
     const [videoTurnedOff, setVideoTurnedOff] = useState(false);
     const [accessibilityPreferences, setAccessibilityPreferences] = useState<IAccessibilityPreferences>({});
-    const [pinnedProducerUser, setPinnedProducerUser] = useState<IProducerUser>();
+    const [pinnedProducerUser, setPinnedProducerUser] = useState<IProducerUser | null>(null);
     const [chatMessages, setChatMessages] = useState<IRoomMessage[]>([]);
     const [subTitles, setSubTitles] = useState<IRoomMessage[]>([]);
     const [roomContext, setRoomContext] = useState<IRoomContext>();
