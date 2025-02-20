@@ -118,6 +118,21 @@ export const TalkableUser = ({ closeView }: ITalkableUserProps) => {
             ></IonInput>
           </IonItem>
           <IonItem>
+            <IonInput
+              label="phone number"
+              labelPlacement="stacked"
+              name="phoneNumber"
+              value={chatUser?.phoneNumber}
+              onIonChange={(evt) => {
+                const { name, value } = evt.target;
+                setChatUser({ ...chatUser, [name]: value } as IChatUser);
+              }}
+            ></IonInput>
+          </IonItem>
+          {chatUser?.phoneNumber?.length < 11 && (
+            <IonLabel position="stacked">Enter valid phone number</IonLabel>
+          )}
+          <IonItem>
             <IonSelect
               label="gender"
               labelPlacement="stacked"
@@ -198,6 +213,11 @@ export const TalkableUser = ({ closeView }: ITalkableUserProps) => {
                   if (step < 4) return setStep(step + 1);
                   if (!chatUser?.userName) {
                     setErrorMessage("Please set user name");
+                    setStep(1);
+                    return;
+                  }
+                  if (chatUser?.phoneNumber?.length < 11) {
+                    setErrorMessage("Phone number is invalid");
                     setStep(1);
                     return;
                   }
