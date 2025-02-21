@@ -21,7 +21,7 @@ import {
   LocalStorageKeys,
 } from "../../shared/enums/talkables/talkables.enum";
 import { useHistory } from "react-router";
-import { useIonToast } from "@ionic/react";
+import { IonButton, IonIcon, IonItem, IonModal, useIonToast } from "@ionic/react";
 import { Model } from "vosk-browser";
 import * as vosk from "vosk-browser";
 import {
@@ -30,8 +30,9 @@ import {
 import * as wav from "wav";
 import * as bufferToStream from "buffer-to-stream";
 import { modelPath } from "../../components/conference-room/Captioning";
-import { APIBaseURL, appPort, getData, serverPort, TalkableSocketBaseURL } from "../../api/base";
+import { APIBaseURL, AppBaseUrl, appPort, getData, serverPort, TalkableSocketBaseURL } from "../../api/base";
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
+import { closeCircle } from "ionicons/icons";
 
 export interface IStatusOverlayOptions {
   openOverlay: boolean;
@@ -320,11 +321,13 @@ export const TalkableContextProvider = ({
 
   const [talkablePage, setTalkablePage] = useState(TalkablePage.CHATS);
   const [chatRoomMessages, setChatRoomMessges] = useState<IChatMessage[]>([]);
+  const [openWifiWarningOverlay, setOpenWifiWarningOverlay] = useState(false)
   useEffect(() => {
     const setSocketURL = async () => {
       if(!/localhost/i.test(window.location.hostname)) return;
 
       const res = await getData<{ipAddress: string}>(`${APIBaseURL.replace("http:", "https:")}/auth/host-ip`);
+      if(!res.ipAddress) return setOpenWifiWarningOverlay(true);
       window.location.href = `https://${res.ipAddress}:${appPort}`
     }
     setSocketURL();
@@ -356,6 +359,31 @@ export const TalkableContextProvider = ({
   return (
     <TalkableContext.Provider value={initTalkableContextProps}>
       {children}
+      <IonModal
+      isOpen={openWifiWarningOverlay}
+      onDidDismiss={() => setOpenWifiWarningOverlay(false)}
+      backdropDismiss={false}
+      >
+        <IonItem>
+          <IonButton
+          slot="end"
+          fill="clear"
+          onClick={() => setOpenWifiWarningOverlay(false)}
+          className="icon-only"
+          aria-label="close wifi warning modal"
+          >
+            <IonIcon icon={closeCircle}></IonIcon>
+          </IonButton>
+        </IonItem>
+        <div style={{textAlign: "center"}}>
+          <h1>
+            Error! There is no Wifi connection.
+          </h1>
+          <p>
+            Please connect the system to a Wifi Hotspot
+          </p>
+        </div>
+      </IonModal>
     </TalkableContext.Provider>
   );
 };

@@ -243,7 +243,12 @@ const ConferenceRoom: React.FC = () => {
   useIonViewWillEnter(() => {
     (async () => {
       try {
-        if(currentRoomRef.current === roomId) return;
+        // if current room ref is roomId; then user has been in room before
+        // ie setup has been successfully called before
+        if(socket && currentRoomRef.current === roomId) {
+          setUp(socket);
+          return;
+        }
 
 
 
