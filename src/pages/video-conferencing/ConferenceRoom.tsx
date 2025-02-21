@@ -148,11 +148,7 @@ const ConferenceRoom: React.FC = () => {
   const userProfile = (user.profile || userFromQuery) as IProfile;
   userProfile.avatar = userProfile.avatar || defaultUserImageUrl;
 
-  const {
-    userId,
-    firstName: userName,
-    avatar,
-  } = userProfile;
+  const { userId, firstName: userName, avatar } = userProfile;
   const [producingStreams, setProducingStreams] = useState(
     [] as IProducerUser[]
   );
@@ -207,7 +203,7 @@ const ConferenceRoom: React.FC = () => {
     showModalText,
     setShowModalText,
     producerAppDataRef,
-    currentRoomRef
+    currentRoomRef,
   } = useRTCToolsContextStore();
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
@@ -222,8 +218,7 @@ const ConferenceRoom: React.FC = () => {
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
 
-  
-    useEffect(() => {
+  useEffect(() => {
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault();
       event.returnValue = "Are you sure you want to leave?"; // Show a browser confirmation.
@@ -233,33 +228,24 @@ const ConferenceRoom: React.FC = () => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
-  useIonViewWillLeave(() => {
-    if(currentRoomRef.current === roomId) {
-      presentToast(`If you intend to dismiss a view, Use the close (x) button at the top right corner of the view`, 4000);
-      navigation.push(`/conference/conference-room/${roomId}`);
-      return
-    }
-  })
   useIonViewWillEnter(() => {
     (async () => {
       try {
         // if current room ref is roomId; then user has been in room before
         // ie setup has been successfully called before
-        if(socket && currentRoomRef.current === roomId) {
+        if (socket && currentRoomRef.current === roomId) {
           setUp(socket);
           return;
         }
 
-
-
         const socketInit = io(`${socketIOBaseURL}`);
         setSocket(socketInit as Socket & Dispatch<Socket>);
         socketInit.on(BroadcastEvents.JOIN_REQUEST_ACCEPTED, async () => {
-          try{
+          try {
             await setUp(socketInit);
-          await setShowModalText("");
-          }catch(error){
-            console.log("Set up error", (error))
+            setShowModalText("");
+          } catch (error) {
+            console.log("Set up error", error);
           }
         });
         socketInit.on(BroadcastEvents.JOIN_REQUEST_REJECTEDD, async () => {
@@ -280,6 +266,11 @@ const ConferenceRoom: React.FC = () => {
           }
         );
 
+        //should always be directly before canjoin;
+        if (currentRoomRef.current === roomId) {
+          setUp(socketInit);
+          return;
+        }
         const userCanJoin = await canJoinRoom(userId, roomId);
         setCanJoin(userCanJoin);
         setShowModalText(`room-${roomId}`);
@@ -546,11 +537,22 @@ const ConferenceRoom: React.FC = () => {
         channelCount: 1,
         sampleRate: audioSampleRate,
         echoCancellation: true,
-        noiseSuppression: true
-      }
+        noiseSuppression: true,
+      },
     });
 
-    await startProducing(producerTransport, mediaStream, producerAppDataRef.current);
+    await startProducing(
+      producerTransport,
+      mediaStream,
+      producerAppDataRef.current
+    );
+    mediaStream.getAudioTracks()[0].enabled = !Boolean(
+      producerAppDataRef.current.isAudioTurnedOff
+    );
+    mediaStream.getVideoTracks()[0].enabled = !Boolean(
+      producerAppDataRef.current.isVideoTurnedOff
+    );
+
     setUserMediaStream(mediaStream);
 
     const roomContext: IRoomContext = await new Promise((resolve) => {
@@ -787,8 +789,8 @@ const ConferenceRoom: React.FC = () => {
     setSocket(undefined);
     stopMediaTracks(userMediaStream as MediaStream);
     producingStreams.forEach((producerUser) => {
-      producerUser.mediaStream?.getTracks().forEach((track) => track.stop())
-    })
+      producerUser.mediaStream?.getTracks().forEach((track) => track.stop());
+    });
     setUserMediaStream({} as MediaStream & Dispatch<MediaStream>);
     setConsumerTransport(null as unknown as Transport);
     setProducerTransport(null as unknown as Transport);
@@ -859,6 +861,7 @@ const ConferenceRoom: React.FC = () => {
             <div slot="start" style={{ width: "20%" }}>
               <CallVideo
                 socket={socket as Socket}
+                mediaStream={userMediaStream as MediaStream}
                 room={roomId}
                 autoPlay
                 playsInline
@@ -907,7 +910,7 @@ const ConferenceRoom: React.FC = () => {
                   action: audioTurnedOff ? "unMute" : "mute",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff);
+                toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff, producerAppDataRef);
               }}
               aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
               size="large"
@@ -923,7 +926,7 @@ const ConferenceRoom: React.FC = () => {
                   action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff);
+                toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff, producerAppDataRef);
               }}
               aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
               size="large"
@@ -956,7 +959,7 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
           </IonItem>
         </IonToolbar>
-        <div id="separator" style={{height: "60px"}}></div>
+        <div id="separator" style={{ height: "60px" }}></div>
 
         <IonModal
           isOpen={showModalText === `room-${roomId}`}
@@ -1029,15 +1032,15 @@ const ConferenceRoom: React.FC = () => {
         >
           <IonItem>
             <IonButton
-            fill="clear"
-            slot="end"
-            className="icon-only"
-            onClick={() => setOpenLastUserModal(false)}
-            aria-label="close modal"
+              fill="clear"
+              slot="end"
+              className="icon-only"
+              onClick={() => setOpenLastUserModal(false)}
+              aria-label="close modal"
             >
               <IonIcon icon={closeCircle} />
             </IonButton>
-            </IonItem>
+          </IonItem>
           <RoomParticipants
             roomParticipants={[lastUser as IProducerUser]}
             socket={socket as Socket}
@@ -1052,18 +1055,17 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setOpenUsersModal(false)}
           backdropDismiss={true}
         >
-          
           <IonItem>
             <IonButton
-            fill="clear"
-            slot="end"
-            className="icon-only"
-          onClick={() => setOpenUsersModal(false)}
-            aria-label="close modal"
+              fill="clear"
+              slot="end"
+              className="icon-only"
+              onClick={() => setOpenUsersModal(false)}
+              aria-label="close modal"
             >
               <IonIcon icon={closeCircle} />
             </IonButton>
-            </IonItem>
+          </IonItem>
           <RoomParticipants
             roomParticipants={producingStreams}
             socket={socket as Socket}
@@ -1296,23 +1298,23 @@ const ConferenceRoom: React.FC = () => {
           </div>
         </IonPopover>
         <IonModal
-        isOpen={pinnedProducerUser ? true : false}
-        onDidDismiss={() => setPinnedProducerUser(null)}
+          isOpen={pinnedProducerUser ? true : false}
+          onDidDismiss={() => setPinnedProducerUser(null)}
         >
           <IonItem>
             <IonButton
-            fill="clear"
-            slot="end"
-            onClick={() => setPinnedProducerUser(null)}
-            aria-label="close zoomed user"
+              fill="clear"
+              slot="end"
+              onClick={() => setPinnedProducerUser(null)}
+              aria-label="close zoomed user"
             >
               <IonIcon icon={closeCircle}></IonIcon>
             </IonButton>
           </IonItem>
-          <div style={{justifyContent: "center", width: "400px"}}>
+          <div style={{ justifyContent: "center", width: "400px" }}>
             <ConsumingVideo
-            producerUser={pinnedProducerUser as IProducerUser}
-            mediaStream={pinnedProducerUser?.mediaStream}
+              producerUser={pinnedProducerUser as IProducerUser}
+              mediaStream={pinnedProducerUser?.mediaStream}
             />
           </div>
         </IonModal>
