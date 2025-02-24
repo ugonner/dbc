@@ -20,6 +20,7 @@ import {
   useIonModal,
   useIonRouter,
   useIonToast,
+  useIonViewDidEnter,
   useIonViewWillEnter,
   useIonViewWillLeave,
 } from "@ionic/react";
@@ -145,7 +146,7 @@ const ConferenceRoom: React.FC = () => {
     avatar: queryParams.get("avatar"),
   };
 
-  const userProfile = (user.profile || userFromQuery) as IProfile;
+  const userProfile = (userFromQuery.userId ? userFromQuery : user.profile) as IProfile;
   userProfile.avatar = userProfile.avatar || defaultUserImageUrl;
 
   const { userId, firstName: userName, avatar } = userProfile;
@@ -204,6 +205,7 @@ const ConferenceRoom: React.FC = () => {
     setShowModalText,
     producerAppDataRef,
     currentRoomRef,
+    captioningRoomRef
   } = useRTCToolsContextStore();
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
@@ -227,6 +229,7 @@ const ConferenceRoom: React.FC = () => {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
+
 
   useIonViewWillEnter(() => {
     (async () => {
@@ -411,6 +414,12 @@ const ConferenceRoom: React.FC = () => {
             setSpecialPresenterStream(presenterProducerUser);
           setOpenSpecialPresenter(true);
         }
+
+        //Set captioning if accessibility priority is high
+        if(data.payload.accessibilityPriority === AccessibilityPriority.HIGH && captioningRoomRef.current !== roomId) {
+          document.getElementById("captioning-trigger")?.click();
+        }
+
         setRoomContext(currentRoomContext as IRoomContext);
       }
     );
@@ -555,21 +564,26 @@ const ConferenceRoom: React.FC = () => {
 
     setUserMediaStream(mediaStream);
 
-    const roomContext: IRoomContext = await new Promise((resolve) => {
+    const roomContextData: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
         BroadcastEvents.GET_ROOM_CONTEXT,
         { room: roomId },
         resolve
       );
     });
-    setRoomContext(roomContext);
+    // auto turn on captioning if accessibility is set to high
+    if(roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH && captioningRoomRef.current !== roomId){
+      document.getElementById("captioning-trigger")?.click();
+    }
+    console.log("ROOM CONTEXT", roomContextData);
+    setRoomContext(roomContextData);
 
     await consumeAllAndSetProducingStreams(
       socketInit,
       consumerTransport,
       device,
       roomId,
-      roomContext
+      roomContextData
     );
 
     //--- SCREEN SHARING
@@ -803,7 +817,7 @@ const ConferenceRoom: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <Captioning producerUsers={producingStreams} />
+          <Captioning producerUsers={producingStreams} room={roomId}/>
           <IonText
             role="button"
             slot="end"
@@ -843,6 +857,19 @@ const ConferenceRoom: React.FC = () => {
         {!showModalText && <div className=""></div>}
         <IonGrid style={{ minHeight: "65%" }}>
           <IonRow>
+            {
+              producingStreams.length === 0 && (
+                <IonCol size="12">
+                  <p>You are the only one in this meeting</p>
+                  <h6>
+                    Please endeavour to be disability inclusive in all your programs and activites - to pretect the rights of persons with disabilities around the world.
+                  </h6>
+                  <h6>
+                    You can start here by setting the accessibility priority of this event,
+                  </h6>
+                </IonCol>
+              )
+            }
             {producingStreams.map((p, i) => (
               <IonCol size="6" key={i}>
                 <ConsumingVideo

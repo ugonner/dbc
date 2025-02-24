@@ -12,17 +12,20 @@ export const modelPath = `/models/vosk-model-small-en-us-0.15.tgz`;
         
 export interface ICaptioningProps {
   producerUsers: IProducerUser[];
+  room: string
 }
 
-export const Captioning = ({ producerUsers }: ICaptioningProps) => {
+export const Captioning = ({ producerUsers, room }: ICaptioningProps) => {
   const audioSampleRate = 16000;
   const voskModelRef = useRef<Model>();
   const recognizerRef = useRef<vosk.KaldiRecognizer>();
   const audioWorkletRef = useRef<AudioWorkletNode | null>();
-  const { userMediaStream } = useRTCToolsContextStore();
+  const { userMediaStream, captioningRoomRef } = useRTCToolsContextStore();
   const audioContextRef = useRef<AudioContext | null>();
   const captionsRef = useRef<string[]>([]);
   const [isCaptioning, setIsCaptioning] = useState(false);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+
   const [openCaptionsOverlay,   setOpenCaptionsOverlay] = useState(false);
   const [captions, setCaptions] = useState("");
   const [partialCaptions, setPartialCaptioins] = useState<string[]>([]);
@@ -35,6 +38,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   
   const startCaptioning = async (producers: IProducerUser[]) => {
     try {
+      setIsProcessingAction(true);
       const stream = new MediaStream();
       producers.forEach((pUser) => {
         if (!pUser.isAudioTurnedOff && pUser.mediaStream) {
@@ -88,7 +92,10 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
       };
       source.connect(audioWorkletRef.current);
       audioWorkletRef.current.connect(audioContextRef.current.destination);
+      captioningRoomRef.current = room;
+      setIsProcessingAction(false);
     } catch (error) {
+      setIsProcessingAction(false);
       console.log("Error in transcripting", (error as Error).message);
     }
   };
@@ -143,6 +150,8 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
 
   const stopCaptioning = async () => {
     try{
+      setIsProcessingAction(true);
+      captioningRoomRef.current = null;
       setOpenCaptionsOverlay(false);
       await closeOut();
       captionsRef.current = [];
@@ -150,6 +159,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
       setIsCaptioning(false); 
       
     }catch(error){
+      setIsProcessingAction(false);
       console.log("Error stopping captioning", (error as Error).message);
     }
   }
@@ -238,6 +248,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
   return (
     <div>
       <IonButton
+        id="captioning-trigger"
         className="icon-only"
         onClick={() => {
           if(isCaptioning) stopCaptioning(); 
@@ -245,6 +256,7 @@ export const Captioning = ({ producerUsers }: ICaptioningProps) => {
           setIsCaptioning((!isCaptioning));
         }}
         aria-label="toggle captioning"
+        disabled={isProcessingAction}
       >
         <IonText>{isCaptioning ? "Turn off captions" : "Turn on Ccaptions"}</IonText>
       </IonButton>

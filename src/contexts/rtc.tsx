@@ -45,6 +45,7 @@ export interface IRTCTools {
     setShowModalText: Dispatch<SetStateAction<string>>;
     showModalText: string;
     currentRoomRef: MutableRefObject<string>
+    captioningRoomRef: MutableRefObject<string | null>
 }
 
 export const RTCToolsContext = createContext({} as unknown as IRTCTools)
@@ -71,9 +72,9 @@ export const RTCToolsProvider = ({children}: PropsWithChildren) => {
     const [showModalText, setShowModalText] = useState("");
     const producerAppDataRef = useRef<IProducerAppData>({})
     const currentRoomRef = useRef<string>("");
-
+    const captioningRoomRef = useRef<string | null>(null);
     const initRTCTools: IRTCTools = {
-        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStream, setUserMediaStream, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText, producerAppDataRef, currentRoomRef
+        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStream, setUserMediaStream, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText, producerAppDataRef, currentRoomRef, captioningRoomRef
     };
     
     return (
