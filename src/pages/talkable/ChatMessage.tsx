@@ -15,7 +15,6 @@ import {
 import { formatDate } from "../../shared/helpers";
 import { useTalkableContextStore } from "../../contexts/talkables/talkable";
 import { useState } from "react";
-import { APIBaseURL } from "../../api/base";
 
 export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
   const { transcribeAudioURL } = useTalkableContextStore();
@@ -44,7 +43,7 @@ export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
           <br />
           {chatMessage.attachment?.attachmentUrl && (
             <audio
-              src={`${APIBaseURL.replace("/api", "")}${
+              src={`${
                 chatMessage.attachment.attachmentUrl
               }`}
               controls
@@ -74,7 +73,7 @@ export const ChatMessage = ({ chatMessage }: { chatMessage: IChatMessage }) => {
               onClick={async () => {
                 setOpenTranscriptOverlay(true);
                 const audioText = await transcribeAudioURL(
-                  `${APIBaseURL.replace("/api", "")}${
+                  `${
                     chatMessage.attachment?.attachmentUrl
                   }`
                 );

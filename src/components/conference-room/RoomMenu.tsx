@@ -73,7 +73,7 @@ export const RoomMenu = ({ socket, room }: IRoomMenuProps) => {
         <small slot="end" style={{fontWeight: "bold"}}> <IonIcon icon={briefcase}></IonIcon> &nbsp; {room}</small>
       </IonItem>
       <h4>Accessibility Preferences</h4>
-      <small>Request for accessibility features</small>
+      <small>Request for accessibility features, If you have difficulty hearing or listening on this event, you should request or identify that you use textual communication by selecting from below option.</small>
       <IonList>
         {Object.keys(accessibilityPreferenceSample).map((field, i) => (
           <IonItem key={i}>
@@ -107,7 +107,7 @@ export const RoomMenu = ({ socket, room }: IRoomMenuProps) => {
       </IonList>
 
       <h4>Room Contexts</h4>
-      <small>Sets Room Priorites</small>
+      <small>Sets Room Priorites. You can set the accessibility priority of the event, to determine how much importance is given to accessibility features in this event</small>
       <IonList>
         <IonItem>
           <IonLabel>Accessibilty Priority</IonLabel>

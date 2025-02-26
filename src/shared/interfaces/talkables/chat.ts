@@ -8,7 +8,8 @@ export interface IChatUser {
     organization?: string;
     purpose?: string;
     communicationMode?: CommunicationModeEnum;
-    gender?: "M" | "F"
+    gender?: "M" | "F";
+    phoneNumber: string;
 
 }
 

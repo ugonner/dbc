@@ -20,8 +20,6 @@ import {
   IonToolbar,
   useIonAlert,
 } from "@ionic/react";
-import { io } from "socket.io-client";
-import { socketIOBaseURL } from "../../api/base";
 import {
   IChat,
   IChatMessage,
@@ -40,6 +38,7 @@ import { CommunicationModeSelector } from "./CommunicationMode";
 export const DBCChatUser: IChatUser = {
   userName: "DBC_OFFICIAL",
   userId: "dbc_official",
+  phoneNumber: "08012345678"
 };
 
 export const Chats = () => {
@@ -108,6 +107,7 @@ export const Chats = () => {
             ({
               userName: "Anonymous",
               userId: `Anonymous${Date.now()}`,
+              phoneNumber: `${new Date().toISOString().split("T")[0].replace("-", "")}`
             } as IChatUser);
 
           //const data = {...(userRef.current || userData )}

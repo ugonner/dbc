@@ -5,22 +5,22 @@ export const TalkableSocketBaseURL = `${baseAPI}/talkable`;
 export const AppBaseUrl = `https://ugonnatalk.vercel.app`;
 export const APIBaseURL = `${baseAPI}/api`;
 
-// END DEPLOYED BASES
-//const baseIp = `http://13.60.184.229`;
+// export const serverPort = 4000;
+// export const appPort = 8100;
 
-// const baseIp = `http://localhost`;
-// const baseWsIp = `ws://lo`
+// // END DEPLOYED BASES
+// //const baseIp = `http://13.60.184.229`;
 
+// const hostname = window.location.hostname;
+// const baseIp = `https://${hostname}`;
+// const baseWsIp = `wss://${hostname}`;
 
-// const serverPort = 4000;
-// const appPort = 8100;
 
 // export const socketIOBaseURL = `${baseIp}:${serverPort}/call`;
 // export const TalkableSocketBaseURL = `${baseWsIp}:${serverPort}/talkable`;
 
 // export const AppBaseUrl = `${baseIp}:${appPort}`;
 // export const APIBaseURL = `${baseIp}:${serverPort}/api`;
-
 
 export const convertObjectLiteralToQueryString = (payload: {[key: string]: unknown}) => {
     let str = "";

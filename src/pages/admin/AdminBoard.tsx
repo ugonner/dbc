@@ -20,6 +20,7 @@ import PageManager from "@ionic/react/dist/types/routing/PageManager";
 import { UserMgt } from "./UserMgt";
 import { AidServiceMgt } from "./AidServiceMgt";
 import { menu } from "ionicons/icons";
+import { QRCodePage } from "./QRCode";
 
 export const AdminBoard = () => {
   const [pageNumber, setPageNumber] = useState(1);
@@ -37,7 +38,7 @@ export const AdminBoard = () => {
                   onClick={() => setOpenBoardMenuOverlay(!openBoardMenuOverlay)}
                   id="board-menu-toggler"
                 >
-                  <IonIcon name={menu}></IonIcon>
+                  <IonIcon icon={menu}></IonIcon>
                 </IonButton>
               </IonItem>
             </IonToolbar>
@@ -45,6 +46,7 @@ export const AdminBoard = () => {
           <IonContent>
             {pageNumber === 1 && <UserMgt />}
             {pageNumber === 2 && <AidServiceMgt />}
+            {pageNumber === 3 && <QRCodePage />}
 
             <IonPopover
               isOpen={openBoardMenuOverlay}
@@ -60,6 +62,11 @@ export const AdminBoard = () => {
                 <IonItem>
                   <IonText role="button" onClick={() => { setOpenBoardMenuOverlay(false); setPageNumber(2)}}>
                     Aid Services
+                  </IonText>
+                </IonItem>
+                <IonItem>
+                  <IonText role="button" onClick={() => { setOpenBoardMenuOverlay(false); setPageNumber(3)}}>
+                    Generate QR codes
                   </IonText>
                 </IonItem>
               </div>

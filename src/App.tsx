@@ -60,6 +60,8 @@ setupIonicReact();
 const App: React.FC = () => (
 
   <IonApp>
+    <TalkableContextProvider>
+      
     <RTCToolsProvider>
         <AsyncHelperProvider>
           <IonReactRouter>
@@ -119,6 +121,7 @@ const App: React.FC = () => (
         </AsyncHelperProvider>
       
     </RTCToolsProvider>
+    </TalkableContextProvider>
   </IonApp>
 
 );

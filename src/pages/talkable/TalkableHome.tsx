@@ -3,8 +3,8 @@ import { Chats } from "./Chats"
 
 export const TalkableHome = () => {
     return (
-        <TalkableContextProvider>
+        <>
             <Chats />
-        </TalkableContextProvider>
+        </>
     )
 }

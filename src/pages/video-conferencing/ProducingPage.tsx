@@ -55,6 +55,8 @@ export const ProducingPage = (props: IProducingPageProps) => {
           },
         });
         if (mediaStream)
+          mediaStream.getVideoTracks()[0].enabled = !(Boolean(videoTurnedOff));
+          mediaStream.getAudioTracks()[0].enabled = !(Boolean(audioTurnedOff));
           setUserMediaStream(
             mediaStream as MediaStream & Dispatch<MediaStream>
           );
@@ -75,7 +77,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
       <IonGrid>
         <IonRow>
           <IonCol sizeMd="6" sizeSm="12">
-            <CallVideo mediaStream={userMediaStream} />
+            <CallVideo mediaStream={userMediaStream as MediaStream} />
           </IonCol>
           <IonCol sizeMd="6" sizeSm="12">
             <h3>Have A Preview</h3>
@@ -96,12 +98,10 @@ export const ProducingPage = (props: IProducingPageProps) => {
                     onClick={async () => {
                       toggleAudio(
                         userMediaStream as MediaStream,
-                        setAudioTurnedOff
+                        setAudioTurnedOff,
+                        producerAppDataRef
                       );
-                      producerAppDataRef.current = {
-                        ...producerAppDataRef.current,
-                        isAudioTurnedOff: audioTurnedOff,
-                      };
+                      
                     }}
                     aria-label={
                       audioTurnedOff ? "turn audio on" : "turn audio off"
@@ -116,12 +116,10 @@ export const ProducingPage = (props: IProducingPageProps) => {
                     onClick={() => {
                       toggleVIdeo(
                         userMediaStream as MediaStream,
-                        setVideoTurnedOff
+                        setVideoTurnedOff,
+                        producerAppDataRef
                       );
-                      producerAppDataRef.current = {
-                        ...producerAppDataRef.current,
-                        isVideoTurnedOff: videoTurnedOff,
-                      };
+                      
                     }}
                     aria-label={
                       videoTurnedOff ? "turn video on" : "turn video off"
