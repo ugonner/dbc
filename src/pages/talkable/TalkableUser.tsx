@@ -180,8 +180,9 @@ export const TalkableUser = ({ closeView }: ITalkableUserProps) => {
           <h4>Choose Communication Preferences</h4>
           <small>
             Select your prefered mode of communication to suit your situation,
-            Eg. Text (Typing) for hearing impaired persons and voice and sounds
-            for visually impaired persons
+            Select your prefered mode of communication: Use voice if you have
+            difficulty typing texts eg: Palsy, Parkinson patients and amputees.
+            Use text if you are more comfortable with texts and typing
           </small>
           <IonItem>
             <IonSelect

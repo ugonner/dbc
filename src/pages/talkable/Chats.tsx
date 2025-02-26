@@ -285,7 +285,7 @@ export const Chats = () => {
             closeView={() => {
               console.log("fired close view");
               setOpenCommunicationModeOverlay(false);
-              setUpChat();
+              //setUpChat();
             }}
           />
         </IonModal>
@@ -298,8 +298,8 @@ export const Chats = () => {
           <div>
             <h4>Communication Mode Preferences</h4>
             <small>
-              Select your preferred mode of communication eg. text for hearing
-              impaired persons and voice for visually impaired persons
+              Select your preferred mode of communication:
+              voice if you have difficulty in typing eg Palsy, Parkinson, amputees and select textual mode if you can use text typing.
             </small>
             <IonList>
               <IonItem>
