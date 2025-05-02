@@ -90,13 +90,13 @@ const UserItem = ({
                       text: `${action} ${aidService.name}`,
                       handler: async () => {
                         try {
-                          const res = await postData(
+                          await postData(
                             `${APIBaseURL}/aid-service/update-aid-service/${
                               selectedUser?.userId
                             }/${action.toLowerCase()}`,
                             {
                               method: "post",
-                              aidServiceId: aidService.id,
+                              id: Number(aidService.id),
                             }
                           );
                         } catch (error) {
