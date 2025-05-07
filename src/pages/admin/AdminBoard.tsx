@@ -20,7 +20,6 @@ import PageManager from "@ionic/react/dist/types/routing/PageManager";
 import { UserMgt } from "./UserMgt";
 import { AidServiceMgt } from "./AidServiceMgt";
 import { menu } from "ionicons/icons";
-import { QRCodePage } from "./QRCode";
 
 export const AdminBoard = () => {
   const [pageNumber, setPageNumber] = useState(1);
@@ -46,8 +45,7 @@ export const AdminBoard = () => {
           <IonContent>
             {pageNumber === 1 && <UserMgt />}
             {pageNumber === 2 && <AidServiceMgt />}
-            {pageNumber === 3 && <QRCodePage />}
-
+            
             <IonPopover
               isOpen={openBoardMenuOverlay}
               onDidDismiss={() => setOpenBoardMenuOverlay(false)}

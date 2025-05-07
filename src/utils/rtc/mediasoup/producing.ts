@@ -3,7 +3,6 @@ import { ClientEvents } from "../../../shared/enums/events.enum";
 import { IApiResponse } from "../../../shared/dtos/responses/api-response";
 import { IProducers } from "../../../shared/interfaces/socket-user";
 import { AppData, DataProducer, Producer, Transport } from "mediasoup-client/lib/types";
-import { audioSampleRate } from "../../../pages/talkable/VoiceMessaging";
 import { IProducerAppData } from "../../../shared/dtos/requests/signals";
 
 export async function getAllRoomProducers(socket: Socket, room: string): Promise<IProducers> {
