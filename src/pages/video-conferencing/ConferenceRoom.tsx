@@ -1,5 +1,4 @@
 import {
-  IonActionSheet,
   IonAvatar,
   IonButton,
   IonCol,
@@ -18,20 +17,13 @@ import {
   IonToolbar,
   useIonAlert,
   useIonModal,
-  useIonRouter,
   useIonToast,
-  useIonViewDidEnter,
   useIonViewWillEnter,
-  useIonViewWillLeave,
 } from "@ionic/react";
-import ExploreContainer from "../../components/ExploreContainer";
 import { Dispatch, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import MediaSoup, { Device } from "mediasoup-client";
 import {
-  AppData,
-  ConnectionState,
-  Producer,
   Transport,
 } from "mediasoup-client/lib/types";
 import { ClientEvents, BroadcastEvents } from "../../shared/enums/events.enum";
@@ -47,10 +39,7 @@ import {
   CaptionDTO,
   ChatMessageDTO,
   CloseMediaDTO,
-  createTransportDTO,
   JoinRoomDTO,
-  ProducingDTO,
-  RequestPermissionDTO,
 } from "../../shared/dtos/requests/signals";
 import {
   consume,
@@ -65,7 +54,6 @@ import {
 } from "../../utils/rtc/mediasoup/create-device-transport";
 import {
   canJoinRoom,
-  isRoomAdmin,
   joinRoom,
   stopMediaTracks,
   toggleAudio,
@@ -77,7 +65,6 @@ import { socketIOBaseURL } from "../../api/base";
 import { IAuthUserProfile, IProfile } from "../../shared/interfaces/user";
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
 import {
-  getAllRoomProducers,
   startProducing,
 } from "../../utils/rtc/mediasoup/producing";
 import { ConsumingVideo } from "../../components/video/ConsumingVideo";
@@ -93,19 +80,12 @@ import {
   micOff,
   videocam,
   videocamOff,
-  cloudUpload,
   power,
-  ellipse,
   close,
   people,
-  chatbox,
-  peopleCircle,
-  moveSharp,
-  ellipsisVerticalSharp,
   ellipsisVertical,
   ellipsisHorizontal,
-  closeCircle,
-  navigate,
+  closeCircle
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -118,14 +98,11 @@ import {
   IRoomMessage,
   RoomMessages,
 } from "../../components/conference-room/RoomMessages";
-import { Caption } from "../../components/video/Caption";
 import { Captioning } from "../../components/conference-room/Captioning";
-import { audioSampleRate } from "../talkable/VoiceMessaging";
-import { App } from "@capacitor/app";
-import { PluginListenerHandle } from "@capacitor/core";
 import { defaultUserImageUrl } from "../../shared/DATASETS/defaults";
 
 const ConferenceRoom: React.FC = () => {
+  const audioSampleRate = 16000;
   const [ariaAssertiveNotification, setAriaAssertiveNotification] =
     useState<string>();
   const [ariaPoliteNotification, setAriaPoliteNotification] =
@@ -146,7 +123,7 @@ const ConferenceRoom: React.FC = () => {
     avatar: queryParams.get("avatar"),
   };
 
-  const userProfile = (userFromQuery.userId ? userFromQuery : user.profile) as IProfile;
+  const userProfile = (userFromQuery.userId ? userFromQuery : (user?.profile || {})) as IProfile;
   userProfile.avatar = userProfile.avatar || defaultUserImageUrl;
 
   const { userId, firstName: userName, avatar } = userProfile;
@@ -619,6 +596,7 @@ const ConferenceRoom: React.FC = () => {
       console.log("Error setting special presenter", (error as Error).message);
     }
   }
+
   function setRoomCaptions(captionMessage: IRoomMessage) {
     const overShoot = (roomSubtitleRef.current?.length || 0) - 5;
     let slicedSubtitles = roomSubtitleRef.current || [];
@@ -1259,7 +1237,7 @@ const ConferenceRoom: React.FC = () => {
               style={{ justifyContent: "flex-start", textAlign: "left" }}
               onClick={async () => {
                 try {
-                  if (!navigator.mediaDevices)
+                  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia)
                     throw new Error(
                       "Your device does not support media sharing"
                     );
