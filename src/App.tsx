@@ -60,6 +60,7 @@ const App: React.FC = () => (
               <Redirect to="/conference/rooms" />
             </Route>
             <Route path={"/admin"} component={AdminBoard}></Route>
+        
           </IonRouterOutlet>
         </IonReactRouter>
       </AsyncHelperProvider>
