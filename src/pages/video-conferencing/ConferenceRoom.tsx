@@ -795,7 +795,7 @@ const ConferenceRoom: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <Captioning producerUsers={producingStreams} room={roomId}/>
+          {/* <Captioning producerUsers={producingStreams} room={roomId}/> */}
           <IonText
             role="button"
             slot="end"
