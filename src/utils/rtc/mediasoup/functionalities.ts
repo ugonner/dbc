@@ -10,34 +10,28 @@ import {
   JoinRoomDTO,
 } from "../../../shared/dtos/requests/signals";
 export function toggleAudio(
-  userMediaStream: MediaStream,
-  setAudioTurnedOff: SetStateAction<Dispatch<boolean>>,
-  producerAppDataRef: MutableRefObject<IProducerAppData>
+  producerAppDataRef: MutableRefObject<IProducerAppData>,
+  setAudioTurnedOff: SetStateAction<Dispatch<boolean>>
 ) {
-  const newTrackState = !userMediaStream.getAudioTracks()[0].enabled;
-  userMediaStream.getAudioTracks()[0].enabled = newTrackState;
-
-  producerAppDataRef.current = {
+   const newTrackState = !(Boolean(producerAppDataRef.current.isAudioTurnedOff))
+   producerAppDataRef.current = {
     ...producerAppDataRef.current,
-    isAudioTurnedOff: !newTrackState,
+    isAudioTurnedOff: newTrackState,
   };
-  setAudioTurnedOff(!newTrackState as boolean & Dispatch<boolean>);
+  setAudioTurnedOff(newTrackState as boolean & Dispatch<boolean>);
 }
 
 export function toggleVIdeo(
-  userMediaStream: MediaStream,
-  setVideoTurnedOff: SetStateAction<Dispatch<boolean>>,
-  producerAppDataRef: MutableRefObject<IProducerAppData>
+  producerAppDataRef: MutableRefObject<IProducerAppData>,
+  setVideoTurnedOff: SetStateAction<Dispatch<boolean>>
 ) {
-  const newTrackState = !userMediaStream.getVideoTracks()[0].enabled;
-  userMediaStream.getVideoTracks()[0].enabled = newTrackState;
-
+  const newTrackState = !(Boolean(producerAppDataRef.current.isVideoTurnedOff))
   producerAppDataRef.current = {
     ...producerAppDataRef.current,
-    isVideoTurnedOff: !newTrackState,
+    isVideoTurnedOff: newTrackState,
   };
 
-  setVideoTurnedOff(!newTrackState as boolean & Dispatch<boolean>);
+  setVideoTurnedOff(newTrackState as boolean & Dispatch<boolean>);
 }
 
 export async function joinRoom(socket: Socket, dto: JoinRoomDTO) {

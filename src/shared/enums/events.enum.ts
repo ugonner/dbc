@@ -36,6 +36,7 @@ export enum BroadcastEvents {
    JOIN_REQUEST_REJECTEDD = "join_request_rejected",
    LEAVE_ROOM = "Leave_room",
    REQUEST_FOR_AID_PERSONNEL = "Request_for_aid_personnel",
+    CONSUMER_READY = "Consumer_ready"
 
     
 }

@@ -5,8 +5,6 @@ import {
   IonIcon,
   IonItem,
   IonRow,
-  IonSpinner,
-  IonText,
   IonToolbar,
   useIonToast,
 } from "@ionic/react";
@@ -18,8 +16,6 @@ import {
   toggleAudio,
   toggleVIdeo,
 } from "../../utils/rtc/mediasoup/functionalities";
-import { Socket } from "socket.io-client";
-import { BroadcastEvents } from "../../shared/enums/events.enum";
 import { mic, micOff, videocam, videocamOff } from "ionicons/icons";
 
 export interface IProducingPageProps {
@@ -29,8 +25,7 @@ export interface IProducingPageProps {
 
 export const ProducingPage = (props: IProducingPageProps) => {
   const {
-    setUserMediaStream,
-    userMediaStream,
+    userMediaStreamRef,
     videoTurnedOff,
     setVideoTurnedOff,
     setAudioTurnedOff,
@@ -50,16 +45,10 @@ export const ProducingPage = (props: IProducingPageProps) => {
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
-            channelCount: 1,
-            sampleRate: 16000,
           },
         });
         if (mediaStream)
-          mediaStream.getVideoTracks()[0].enabled = !(Boolean(videoTurnedOff));
-          mediaStream.getAudioTracks()[0].enabled = !(Boolean(audioTurnedOff));
-          setUserMediaStream(
-            mediaStream as MediaStream & Dispatch<MediaStream>
-          );
+          userMediaStreamRef.current = mediaStream;
 
         setShowTaskbar(true);
       } catch (error) {
@@ -77,7 +66,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
       <IonGrid>
         <IonRow>
           <IonCol sizeMd="6" sizeSm="12">
-            <CallVideo mediaStream={userMediaStream as MediaStream} />
+            <CallVideo mediaStream={userMediaStreamRef.current as MediaStream} />
           </IonCol>
           <IonCol sizeMd="6" sizeSm="12">
             <h3>Have A Preview</h3>
@@ -92,32 +81,14 @@ export const ProducingPage = (props: IProducingPageProps) => {
             {showToolbar && (
               <IonToolbar>
                 <IonItem>
-                  <IonButton
-                    fill="clear"
-                    size="large"
-                    onClick={async () => {
-                      toggleAudio(
-                        userMediaStream as MediaStream,
-                        setAudioTurnedOff,
-                        producerAppDataRef
-                      );
-                      
-                    }}
-                    aria-label={
-                      audioTurnedOff ? "turn audio on" : "turn audio off"
-                    }
-                  >
-                    <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
-                  </IonButton>
 
                   <IonButton
                     fill="clear"
                     size="large"
                     onClick={() => {
                       toggleVIdeo(
-                        userMediaStream as MediaStream,
-                        setVideoTurnedOff,
-                        producerAppDataRef
+                        producerAppDataRef,
+                        setVideoTurnedOff
                       );
                       
                     }}
@@ -130,9 +101,27 @@ export const ProducingPage = (props: IProducingPageProps) => {
                     ></IonIcon>
                   </IonButton>
 
+                  
                   <IonButton
                     fill="clear"
-                    slot="end"
+                    size="large"
+                    onClick={async () => {
+                      toggleAudio(
+                        producerAppDataRef,
+                      setAudioTurnedOff,
+                      );
+                      
+                    }}
+                    aria-label={
+                      audioTurnedOff ? "turn audio on" : "turn audio off"
+                    }
+                  >
+                    <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
+                  </IonButton>
+
+                  <IonButton
+                    fill="clear"
+                    
                     onClick={async () => {
                       if (props.joinHandler) await props.joinHandler();
                       if (!props.canJoin) setOpenJinRequestSpinner(true);

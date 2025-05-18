@@ -111,3 +111,10 @@ export interface AccessibilityPreferenceDTO {
     partialResult?: string;
     finalResult?: string;
   }
+  
+  export interface IConsumerReadyDTO {
+    socketId: string;
+    room: string;
+    producerId: string;
+    consumerId: string;
+  }
