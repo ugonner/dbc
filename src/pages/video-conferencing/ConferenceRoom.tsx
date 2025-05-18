@@ -39,6 +39,7 @@ import {
   CaptionDTO,
   ChatMessageDTO,
   CloseMediaDTO,
+  IProducerAppData,
   JoinRoomDTO,
 } from "../../shared/dtos/requests/signals";
 import {
@@ -85,7 +86,8 @@ import {
   people,
   ellipsisVertical,
   ellipsisHorizontal,
-  closeCircle
+  closeCircle,
+  powerSharp
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -160,8 +162,7 @@ const ConferenceRoom: React.FC = () => {
     setConsumerTransport,
     producerTransport,
     setProducerTransport,
-    userMediaStream,
-    setUserMediaStream,
+    userMediaStreamRef,
     audioTurnedOff,
     setAudioTurnedOff,
     videoTurnedOff,
@@ -197,15 +198,7 @@ const ConferenceRoom: React.FC = () => {
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      event.returnValue = "Are you sure you want to leave?"; // Show a browser confirmation.
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
+  
 
 
   useIonViewWillEnter(() => {
@@ -517,29 +510,19 @@ const ConferenceRoom: React.FC = () => {
       }
     );
 
-    const mediaStream = await navigator.mediaDevices.getUserMedia({
+    let mediaStream = userMediaStreamRef.current;
+    if(!userMediaStreamRef.current) {mediaStream = await navigator.mediaDevices.getUserMedia({
       video: true,
-      audio: {
-        channelCount: 1,
-        sampleRate: audioSampleRate,
-        echoCancellation: true,
-        noiseSuppression: true,
-      },
-    });
+      audio: true
+    });}
 
     await startProducing(
       producerTransport,
-      mediaStream,
+      mediaStream as MediaStream,
       producerAppDataRef.current
     );
-    mediaStream.getAudioTracks()[0].enabled = !Boolean(
-      producerAppDataRef.current.isAudioTurnedOff
-    );
-    mediaStream.getVideoTracks()[0].enabled = !Boolean(
-      producerAppDataRef.current.isVideoTurnedOff
-    );
 
-    setUserMediaStream(mediaStream);
+    userMediaStreamRef.current = (mediaStream);
 
     const roomContextData: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
@@ -699,6 +682,7 @@ const ConferenceRoom: React.FC = () => {
             ...data,
             mediaStream: producerStream,
           };
+          
           producingStreamsRef.current = roomProducers;
           const producerUserArr = Object.values(roomProducers);
           setProducingStreams(producerUserArr);
@@ -779,15 +763,16 @@ const ConferenceRoom: React.FC = () => {
   async function navigateOutOfRoom() {
     socket?.disconnect();
     setSocket(undefined);
-    stopMediaTracks(userMediaStream as MediaStream);
+    stopMediaTracks(userMediaStreamRef.current as MediaStream);
     producingStreams.forEach((producerUser) => {
       producerUser.mediaStream?.getTracks().forEach((track) => track.stop());
     });
-    setUserMediaStream({} as MediaStream & Dispatch<MediaStream>);
+    userMediaStreamRef.current = null;
     setConsumerTransport(null as unknown as Transport);
     setProducerTransport(null as unknown as Transport);
     setRoomContext(undefined);
     setDevice(null as unknown as Device);
+    producerAppDataRef.current = null as unknown as IProducerAppData;
     currentRoomRef.current = "";
     navigation.push("/conference/rooms");
   }
@@ -866,7 +851,7 @@ const ConferenceRoom: React.FC = () => {
             <div slot="start" style={{ width: "20%" }}>
               <CallVideo
                 socket={socket as Socket}
-                mediaStream={userMediaStream as MediaStream}
+                mediaStream={userMediaStreamRef.current as MediaStream}
                 room={roomId}
                 autoPlay
                 playsInline
@@ -915,7 +900,7 @@ const ConferenceRoom: React.FC = () => {
                   action: audioTurnedOff ? "unMute" : "mute",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleAudio(userMediaStream as MediaStream, setAudioTurnedOff, producerAppDataRef);
+                toggleAudio(producerAppDataRef, setAudioTurnedOff);
               }}
               aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
               size="large"
@@ -931,7 +916,7 @@ const ConferenceRoom: React.FC = () => {
                   action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleVIdeo(userMediaStream as MediaStream, setVideoTurnedOff, producerAppDataRef);
+                toggleVIdeo( producerAppDataRef, setVideoTurnedOff);
               }}
               aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
               size="large"
@@ -953,14 +938,14 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
 
             <IonButton
-              fill="clear"
+              color={"danger"}
               className="icon-only"
               aria-label="leave meeting"
               slot="end"
               onClick={navigateOutOfRoom}
               size="large"
             >
-              <IonIcon icon={power}></IonIcon>
+              <IonIcon color="light" icon={powerSharp}></IonIcon>
             </IonButton>
           </IonItem>
         </IonToolbar>

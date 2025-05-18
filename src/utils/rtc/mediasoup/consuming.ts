@@ -2,8 +2,8 @@ import { DataConsumer, DataConsumerOptions, Device, Transport } from "mediasoup-
 import { Socket } from "socket.io-client";
 import { IApiResponse } from "../../../shared/dtos/responses/api-response";
 import { CreatedConsumerDTO } from "../../../shared/dtos/responses/signals";
-import { CreateConsumerDTO } from "../../../shared/dtos/requests/signals";
-import { ClientEvents } from "../../../shared/enums/events.enum";
+import { CreateConsumerDTO, IConsumerReadyDTO } from "../../../shared/dtos/requests/signals";
+import { BroadcastEvents, ClientEvents } from "../../../shared/enums/events.enum";
 import {
   IProducers,
   IProducerUser,
@@ -74,6 +74,16 @@ export async function consume(
     if (response.data) {
       const consumer = await consumerTransport.consume(response.data);
       const { track } = consumer;
+      await new Promise((resolve) => {
+        const consumerReadyDto: IConsumerReadyDTO = {
+          socketId: `${socket.id}`,
+          producerId,
+          room,
+          consumerId: `${response.data?.id}`
+        }
+        socket.emit(BroadcastEvents.CONSUMER_READY, consumerReadyDto, resolve);
+      })
+      consumer.resume();
       return track;
     }
     throw new Error(response.message);

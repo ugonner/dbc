@@ -1,6 +1,6 @@
 import { Device } from "mediasoup-client";
 import { DataProducer, Producer, Transport } from "mediasoup-client/lib/types";
-import { createContext, Dispatch, MutableRefObject, PropsWithChildren, SetStateAction, useContext, useRef, useState, useSyncExternalStore } from "react";
+import { createContext, Dispatch, MutableRefObject, PropsWithChildren, RefObject, SetStateAction, useContext, useRef, useState, useSyncExternalStore } from "react";
 import { Socket } from "socket.io-client";
 import { IAccessibilityPreferences, IProducerUser, IUserReactions, UserActions } from "../shared/interfaces/socket-user";
 import { BroadcastEvents } from "../shared/enums/events.enum";
@@ -21,8 +21,7 @@ export interface IRTCTools {
     setVideoProducer: Dispatch<SetStateAction<Producer>>;
     audioProducer?: Producer;
     setAudioProducer: Dispatch<SetStateAction<Producer>>;
-    userMediaStream: MediaStream | undefined;
-    setUserMediaStream: Dispatch<SetStateAction<MediaStream | undefined>>;
+    userMediaStreamRef: MutableRefObject<MediaStream | null>;
     videoTurnedOff: boolean;
     setVideoTurnedOff: Dispatch<SetStateAction<boolean>>;
     audioTurnedOff: boolean;
@@ -67,14 +66,14 @@ export const RTCToolsProvider = ({children}: PropsWithChildren) => {
     const [roomContext, setRoomContext] = useState<IRoomContext>();
     const [dataProducer, setDataProducer] = useState<DataProducer>();
 
-    const [userMediaStream, setUserMediaStream] = useState<MediaStream>()
     const [userReactionsState, setUserReactionsState] = useState<IUserReactions>({})
     const [showModalText, setShowModalText] = useState("");
     const producerAppDataRef = useRef<IProducerAppData>({})
     const currentRoomRef = useRef<string>("");
     const captioningRoomRef = useRef<string | null>(null);
+    const userMediaStreamRef = useRef<MediaStream>(null);
     const initRTCTools: IRTCTools = {
-        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStream, setUserMediaStream, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText, producerAppDataRef, currentRoomRef, captioningRoomRef
+        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStreamRef, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText, producerAppDataRef, currentRoomRef, captioningRoomRef
     };
     
     return (
