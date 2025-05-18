@@ -900,7 +900,7 @@ const ConferenceRoom: React.FC = () => {
                   action: audioTurnedOff ? "unMute" : "mute",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleAudio(producerAppDataRef, setAudioTurnedOff);
+                toggleAudio(producerAppDataRef, setAudioTurnedOff, userMediaStreamRef);
               }}
               aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
               size="large"
@@ -916,7 +916,7 @@ const ConferenceRoom: React.FC = () => {
                   action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleVIdeo( producerAppDataRef, setVideoTurnedOff);
+                toggleVIdeo( producerAppDataRef, setVideoTurnedOff, userMediaStreamRef);
               }}
               aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
               size="large"

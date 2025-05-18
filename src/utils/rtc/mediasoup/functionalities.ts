@@ -11,26 +11,29 @@ import {
 } from "../../../shared/dtos/requests/signals";
 export function toggleAudio(
   producerAppDataRef: MutableRefObject<IProducerAppData>,
-  setAudioTurnedOff: SetStateAction<Dispatch<boolean>>
+  setAudioTurnedOff: SetStateAction<Dispatch<boolean>>,
+  userMediaRef: MutableRefObject<MediaStream | null>
 ) {
    const newTrackState = !(Boolean(producerAppDataRef.current.isAudioTurnedOff))
    producerAppDataRef.current = {
     ...producerAppDataRef.current,
     isAudioTurnedOff: newTrackState,
   };
+  if(userMediaRef.current) userMediaRef.current.getAudioTracks()[0].enabled = !newTrackState;
   setAudioTurnedOff(newTrackState as boolean & Dispatch<boolean>);
 }
 
 export function toggleVIdeo(
   producerAppDataRef: MutableRefObject<IProducerAppData>,
-  setVideoTurnedOff: SetStateAction<Dispatch<boolean>>
+  setVideoTurnedOff: SetStateAction<Dispatch<boolean>>,
+  userMediaRef: MutableRefObject<MediaStream | null>
 ) {
   const newTrackState = !(Boolean(producerAppDataRef.current.isVideoTurnedOff))
   producerAppDataRef.current = {
     ...producerAppDataRef.current,
     isVideoTurnedOff: newTrackState,
   };
-
+if(userMediaRef.current) userMediaRef.current.getVideoTracks()[0].enabled = !newTrackState;
   setVideoTurnedOff(newTrackState as boolean & Dispatch<boolean>);
 }
 

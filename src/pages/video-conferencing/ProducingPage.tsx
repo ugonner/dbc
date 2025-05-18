@@ -88,7 +88,8 @@ export const ProducingPage = (props: IProducingPageProps) => {
                     onClick={() => {
                       toggleVIdeo(
                         producerAppDataRef,
-                        setVideoTurnedOff
+                        setVideoTurnedOff,
+                        userMediaStreamRef
                       );
                       
                     }}
@@ -109,6 +110,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
                       toggleAudio(
                         producerAppDataRef,
                       setAudioTurnedOff,
+                      userMediaStreamRef
                       );
                       
                     }}
@@ -121,7 +123,7 @@ export const ProducingPage = (props: IProducingPageProps) => {
 
                   <IonButton
                     fill="clear"
-                    
+                    slot="end"
                     onClick={async () => {
                       if (props.joinHandler) await props.joinHandler();
                       if (!props.canJoin) setOpenJinRequestSpinner(true);
