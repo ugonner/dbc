@@ -20,10 +20,12 @@ import {
   useIonToast,
   useIonViewWillEnter,
 } from "@ionic/react";
-import { Dispatch, useEffect, useRef, useState } from "react";
+import { Consumer, Dispatch, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import MediaSoup, { Device } from "mediasoup-client";
 import {
+  DataConsumer,
+  DataProducer,
   Transport,
 } from "mediasoup-client/lib/types";
 import { ClientEvents, BroadcastEvents } from "../../shared/enums/events.enum";
@@ -66,7 +68,9 @@ import { socketIOBaseURL } from "../../api/base";
 import { IAuthUserProfile, IProfile } from "../../shared/interfaces/user";
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
 import {
+  getAllRoomProducers,
   startProducing,
+  startProducingData,
 } from "../../utils/rtc/mediasoup/producing";
 import { ConsumingVideo } from "../../components/video/ConsumingVideo";
 import {
@@ -87,7 +91,7 @@ import {
   ellipsisVertical,
   ellipsisHorizontal,
   closeCircle,
-  powerSharp
+  powerSharp,
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -102,6 +106,7 @@ import {
 } from "../../components/conference-room/RoomMessages";
 import { Captioning } from "../../components/conference-room/Captioning";
 import { defaultUserImageUrl } from "../../shared/DATASETS/defaults";
+import { IDataMessageDTO } from "../../shared/interfaces/data-message";
 
 const ConferenceRoom: React.FC = () => {
   const audioSampleRate = 16000;
@@ -125,7 +130,9 @@ const ConferenceRoom: React.FC = () => {
     avatar: queryParams.get("avatar"),
   };
 
-  const userProfile = (userFromQuery.userId ? userFromQuery : (user?.profile || {})) as IProfile;
+  const userProfile = (
+    userFromQuery.userId ? userFromQuery : user?.profile || {}
+  ) as IProfile;
   userProfile.avatar = userProfile.avatar || defaultUserImageUrl;
 
   const { userId, firstName: userName, avatar } = userProfile;
@@ -156,9 +163,7 @@ const ConferenceRoom: React.FC = () => {
   const {
     socket,
     setSocket,
-    device,
     setDevice,
-    consumerTransport,
     setConsumerTransport,
     producerTransport,
     setProducerTransport,
@@ -183,10 +188,14 @@ const ConferenceRoom: React.FC = () => {
     setShowModalText,
     producerAppDataRef,
     currentRoomRef,
-    captioningRoomRef
+    captioningRoomRef,
   } = useRTCToolsContextStore();
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
+  const [openCaptionsOverlay, setOpenCaptionsOverlay] = useState(true);
+  const dataProducerRef = useRef<DataProducer>();
+  const dataConsumersRef = useRef<DataConsumer[]>([]);
+
   const roomSubtitleRef = useRef<IRoomMessage[]>();
 
   const [openChatMessagesModal, setOpenChatMessagesModal] = useState(false);
@@ -197,9 +206,6 @@ const ConferenceRoom: React.FC = () => {
   const [presentModal, dismissModal] = useIonModal(ProducingPage);
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
-
-  
-
 
   useIonViewWillEnter(() => {
     (async () => {
@@ -303,6 +309,7 @@ const ConferenceRoom: React.FC = () => {
         dataConsumer?.on("message", (data) => {
           handleDataProducerMessage(data);
         });
+        dataConsumersRef.current.push(dataConsumer);
       }
     );
 
@@ -386,7 +393,10 @@ const ConferenceRoom: React.FC = () => {
         }
 
         //Set captioning if accessibility priority is high
-        if(data.payload.accessibilityPriority === AccessibilityPriority.HIGH && captioningRoomRef.current !== roomId) {
+        if (
+          data.payload.accessibilityPriority === AccessibilityPriority.HIGH &&
+          captioningRoomRef.current !== roomId
+        ) {
           document.getElementById("captioning-trigger")?.click();
         }
 
@@ -511,10 +521,12 @@ const ConferenceRoom: React.FC = () => {
     );
 
     let mediaStream = userMediaStreamRef.current;
-    if(!userMediaStreamRef.current) {mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true
-    });}
+    if (!userMediaStreamRef.current) {
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
+      });
+    }
 
     await startProducing(
       producerTransport,
@@ -522,7 +534,10 @@ const ConferenceRoom: React.FC = () => {
       producerAppDataRef.current
     );
 
-    userMediaStreamRef.current = (mediaStream);
+    const dataProducer = await startProducingData(producerTransport);
+    dataProducerRef.current = dataProducer;
+
+    userMediaStreamRef.current = mediaStream;
 
     const roomContextData: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
@@ -532,7 +547,10 @@ const ConferenceRoom: React.FC = () => {
       );
     });
     // auto turn on captioning if accessibility is set to high
-    if(roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH && captioningRoomRef.current !== roomId){
+    if (
+      roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH &&
+      captioningRoomRef.current !== roomId
+    ) {
       document.getElementById("captioning-trigger")?.click();
     }
     console.log("ROOM CONTEXT", roomContextData);
@@ -565,6 +583,35 @@ const ConferenceRoom: React.FC = () => {
     currentRoomRef.current = roomId;
   }
 
+  async function consumeAllDataProducers(
+    socket: Socket,
+    consumerTransport: Transport,
+    device: Device
+  ) {
+    const roomProducers = await getAllRoomProducers(socket, roomId);
+    const roomUserDetails = Object.values(roomProducers || {});
+    const promiseRes = await Promise.allSettled(
+      roomUserDetails.map((user) =>
+        consumeData(
+          user.dataProducerId as string,
+          socket,
+          consumerTransport,
+          device,
+          roomId
+        )
+      )
+    );
+
+    promiseRes.forEach((res) => {
+      if (res.status === "fulfilled") {
+        
+        res.value.on("message", (data) => {
+          handleDataProducerMessage(data);
+        });
+        dataConsumersRef.current.push(res.value);
+      }
+    });
+  }
   async function setAsRoomSpecialPresenter(socket: Socket, room: string) {
     try {
       const data: IRoomContext = {
@@ -640,17 +687,16 @@ const ConferenceRoom: React.FC = () => {
     }
   }
 
-  async function handleDataProducerMessage(data: CaptionDTO) {
+  async function handleDataProducerMessage(data: IDataMessageDTO) {
     console.log("data on CHAT MESSAGE", data);
     const sender = (
       producingStreamsRef.current as { [key: string]: IProducerUser }
     )[`${data?.socketId}`];
     const chatMessageData: IRoomMessage = {
-      senderSocketId: data.socketId as string,
+      senderSocketId: data.socketId,
       senderUserName: sender?.userName,
-      message: data.captionText as string,
+      message: data.message,
     };
-    presentToast(chatMessageData.message, 4000);
     setRoomCaptions(chatMessageData);
   }
 
@@ -682,7 +728,7 @@ const ConferenceRoom: React.FC = () => {
             ...data,
             mediaStream: producerStream,
           };
-          
+
           producingStreamsRef.current = roomProducers;
           const producerUserArr = Object.values(roomProducers);
           setProducingStreams(producerUserArr);
@@ -780,7 +826,13 @@ const ConferenceRoom: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          {/* <Captioning producerUsers={producingStreams} room={roomId}/> */}
+          <Captioning
+            dataProducer={dataProducerRef.current as DataProducer}
+            mediaStream={userMediaStreamRef.current as MediaStream}
+            socketId={socket?.id as string}
+            room={roomId}
+            setOpenCaptionsOverlay={setOpenCaptionsOverlay}
+          />
           <IonText
             role="button"
             slot="end"
@@ -820,19 +872,20 @@ const ConferenceRoom: React.FC = () => {
         {!showModalText && <div className=""></div>}
         <IonGrid style={{ minHeight: "65%" }}>
           <IonRow>
-            {
-              producingStreams.length === 0 && (
-                <IonCol size="12">
-                  <p>You are the only one in this meeting</p>
-                  <h6>
-                    Please endeavour to be disability inclusive in all your programs and activites - to pretect the rights of persons with disabilities around the world.
-                  </h6>
-                  <h6>
-                    You can start here by setting the accessibility priority of this event,
-                  </h6>
-                </IonCol>
-              )
-            }
+            {producingStreams.length === 0 && (
+              <IonCol size="12">
+                <p>You are the only one in this meeting</p>
+                <h6>
+                  Please endeavour to be disability inclusive in all your
+                  programs and activites - to pretect the rights of persons with
+                  disabilities around the world.
+                </h6>
+                <h6>
+                  You can start here by setting the accessibility priority of
+                  this event,
+                </h6>
+              </IonCol>
+            )}
             {producingStreams.map((p, i) => (
               <IonCol size="6" key={i}>
                 <ConsumingVideo
@@ -847,6 +900,14 @@ const ConferenceRoom: React.FC = () => {
           </IonRow>
         </IonGrid>
         <IonToolbar>
+          {openCaptionsOverlay &&
+            subTitles.map((subTitle, index) => (
+              <p key={index}>
+                <small>{subTitle.senderUserName}</small>
+                <br />
+                <span className="ion-text-wrap">{subTitle.message}</span>
+              </p>
+            ))}
           <IonItem>
             <div slot="start" style={{ width: "20%" }}>
               <CallVideo
@@ -900,7 +961,11 @@ const ConferenceRoom: React.FC = () => {
                   action: audioTurnedOff ? "unMute" : "mute",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleAudio(producerAppDataRef, setAudioTurnedOff, userMediaStreamRef);
+                toggleAudio(
+                  producerAppDataRef,
+                  setAudioTurnedOff,
+                  userMediaStreamRef
+                );
               }}
               aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
               size="large"
@@ -916,7 +981,11 @@ const ConferenceRoom: React.FC = () => {
                   action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
                 };
                 socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleVIdeo( producerAppDataRef, setVideoTurnedOff, userMediaStreamRef);
+                toggleVIdeo(
+                  producerAppDataRef,
+                  setVideoTurnedOff,
+                  userMediaStreamRef
+                );
               }}
               aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
               size="large"
@@ -1072,7 +1141,7 @@ const ConferenceRoom: React.FC = () => {
         >
           <div>
             {Object.keys(userReactionsEmojis).map((reaction) => (
-              <IonItem>
+              <IonItem key={reaction}>
                 <IonText
                   role="button"
                   slot="start"
@@ -1222,7 +1291,10 @@ const ConferenceRoom: React.FC = () => {
               style={{ justifyContent: "flex-start", textAlign: "left" }}
               onClick={async () => {
                 try {
-                  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia)
+                  if (
+                    !navigator.mediaDevices ||
+                    !navigator.mediaDevices.getDisplayMedia
+                  )
                     throw new Error(
                       "Your device does not support media sharing"
                     );

@@ -9,15 +9,19 @@ import {
   IProducerUser,
 } from "../../../shared/interfaces/socket-user";
 import { getAllRoomProducers } from "./producing";
+import { MutableRefObject } from "react";
+import { IDataMessageDTO } from "../../../shared/interfaces/data-message";
 
 export async function consumeData(
   producerId: string,
   socket: Socket,
   consumerTransport: Transport,
   device: Device,
-  room: string
+  room: string,
+ // dataMessagesRef: MutableRefObject<IDataMessageDTO[]>
 ): Promise<DataConsumer> {
   try {
+    if(!producerId) throw new Error("No producer ID Provided for consuming data");/ 
     const response: IApiResponse<DataConsumerOptions> = await new Promise(
       (resolve) => {
         const dto: CreateConsumerDTO = {
@@ -37,6 +41,8 @@ export async function consumeData(
     if (response.error) throw new Error(response.error as string);
     if (response.data) {
       const dataCnsumer = await consumerTransport.consumeData(response.data)
+      
+      
       return dataCnsumer;
     }
     throw new Error(response.message);
