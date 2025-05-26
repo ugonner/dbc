@@ -1,11 +1,15 @@
 import {
   IonButton,
+  IonContent,
+  IonFooter,
   IonIcon,
   IonInput,
   IonItem,
   IonLabel,
   IonList,
+  IonPage,
   IonTextarea,
+  IonToolbar,
 } from "@ionic/react";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
 import { BroadcastEvents } from "../../shared/enums/events.enum";
@@ -39,6 +43,9 @@ export const RoomMessages = ({
   const [textareaRowHeight, setTextareaRowHeight] = useState(1);
 
   return (
+    <IonPage>
+      <IonContent>
+        
     <IonList>
       {roomMessages.map((msg, i) => (
         <IonItem key={i}>
@@ -48,7 +55,11 @@ export const RoomMessages = ({
           </IonLabel>
         </IonItem>
       ))}
-      {showInput && (
+      
+    </IonList>
+    <IonFooter>
+      <IonToolbar slot="bottom">
+        {showInput && (
         <IonItem>
           <IonTextarea
             label="Type in chat"
@@ -92,6 +103,9 @@ export const RoomMessages = ({
           </IonButton>
         </IonItem>
       )}
-    </IonList>
+      </IonToolbar>
+    </IonFooter>
+      </IonContent>
+    </IonPage>
   );
 };
