@@ -22,6 +22,7 @@ export const Captioning = ({ producerUsers, room }: ICaptioningProps) => {
   const audioWorkletRef = useRef<AudioWorkletNode | null>();
   const { userMediaStreamRef, captioningRoomRef } = useRTCToolsContextStore();
   const userMediaStream = userMediaStreamRef.current;
+  
   const audioContextRef = useRef<AudioContext | null>();
   const captionsRef = useRef<string[]>([]);
   const [isCaptioning, setIsCaptioning] = useState(false);
