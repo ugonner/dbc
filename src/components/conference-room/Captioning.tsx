@@ -1,16 +1,11 @@
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { IProducerUser } from "../../shared/interfaces/socket-user";
-import vosker, { Model } from "vosk-browser";
+import { Model } from "vosk-browser";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
 import * as vosk from "vosk-browser";
-import { AppBaseUrl } from "../../api/base";
 import {
   IonButton,
-  IonIcon,
-  IonItem,
-  IonPopover,
   IonText,
-  IonToast,
 } from "@ionic/react";
 import { chatbox, closeCircle, diamondSharp } from "ionicons/icons";
 import { useAsyncHelpersContext } from "../../contexts/async-helpers";
