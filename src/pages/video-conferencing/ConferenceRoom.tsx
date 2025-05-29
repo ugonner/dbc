@@ -18,9 +18,17 @@ import {
   useIonAlert,
   useIonModal,
   useIonToast,
+  useIonViewDidEnter,
   useIonViewWillEnter,
 } from "@ionic/react";
-import { Consumer, Dispatch, useEffect, useRef, useState } from "react";
+import {
+  Consumer,
+  Dispatch,
+  MutableRefObject,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { io, Socket } from "socket.io-client";
 import MediaSoup, { Device } from "mediasoup-client";
 import {
@@ -107,6 +115,7 @@ import {
 import { Captioning } from "../../components/conference-room/Captioning";
 import { defaultUserImageUrl } from "../../shared/DATASETS/defaults";
 import { IDataMessageDTO } from "../../shared/interfaces/data-message";
+import { App } from "@capacitor/app";
 
 const ConferenceRoom: React.FC = () => {
   const audioSampleRate = 16000;
@@ -194,6 +203,7 @@ const ConferenceRoom: React.FC = () => {
   const chatMessagesRef = useRef<IRoomMessage[]>();
   const [openCaptionsOverlay, setOpenCaptionsOverlay] = useState(true);
   const dataProducerRef = useRef<DataProducer>();
+  const socketIdRef = useRef<string>();
   const dataConsumersRef = useRef<DataConsumer[]>([]);
 
   const roomSubtitleRef = useRef<IRoomMessage[]>();
@@ -207,6 +217,7 @@ const ConferenceRoom: React.FC = () => {
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
 
+  
   useIonViewWillEnter(() => {
     (async () => {
       try {
@@ -218,6 +229,7 @@ const ConferenceRoom: React.FC = () => {
         }
 
         const socketInit = io(`${socketIOBaseURL}`);
+        socketIdRef.current = socketInit?.id;
         setSocket(socketInit as Socket & Dispatch<Socket>);
         socketInit.on(BroadcastEvents.JOIN_REQUEST_ACCEPTED, async () => {
           try {
@@ -259,9 +271,25 @@ const ConferenceRoom: React.FC = () => {
     })();
   }, []);
 
+  useEffect(() => {
+    const handlePopState = (event: any) => {
+      try{
+        window.history.pushState(null, "", location.pathname + location.search);
+
+      }catch(error){
+        console.log("Error handling pop / bak navigation", (error as Error).message)
+      }
+    }
+  window.addEventListener("popstate", handlePopState);
+  return () => {
+    window.removeEventListener("popstate", handlePopState)
+  }
+  }, [])
+
   async function setUp(socketInit: Socket) {
     setShowModalText("");
     await joinRoom(socketInit, { room: roomId, userId, userName, avatar });
+
     const device = await createDevice(socketInit, roomId);
     const consumerTransport = await createConsumerTransport(
       socketInit,
@@ -275,6 +303,7 @@ const ConferenceRoom: React.FC = () => {
       roomId,
       { isAudioTurnedOff: audioTurnedOff, isVideoTurnedOff: videoTurnedOff }
     );
+
     setDevice(device as Device & Dispatch<Device>);
     setProducerTransport(producerTransport as Transport & Dispatch<Transport>);
     setConsumerTransport(consumerTransport as Transport & Dispatch<Transport>);
@@ -307,7 +336,7 @@ const ConferenceRoom: React.FC = () => {
           roomId
         );
         dataConsumer?.on("message", (data) => {
-          handleDataProducerMessage(data);
+          handleDataProducerMessage(JSON.parse(data || JSON.stringify({})));
         });
         dataConsumersRef.current.push(dataConsumer);
       }
@@ -497,7 +526,6 @@ const ConferenceRoom: React.FC = () => {
             resolve
           );
         });
-
         const chatMessageData: IRoomMessage = {
           message: data?.payload.message,
           senderSocketId: data?.payload.socketId as string,
@@ -604,9 +632,8 @@ const ConferenceRoom: React.FC = () => {
 
     promiseRes.forEach((res) => {
       if (res.status === "fulfilled") {
-        
         res.value.on("message", (data) => {
-          handleDataProducerMessage(data);
+          handleDataProducerMessage(JSON.parse(data || JSON.stringify({})));
         });
         dataConsumersRef.current.push(res.value);
       }
@@ -628,7 +655,7 @@ const ConferenceRoom: React.FC = () => {
   }
 
   function setRoomCaptions(captionMessage: IRoomMessage) {
-    const overShoot = (roomSubtitleRef.current?.length || 0) - 5;
+    const overShoot = (roomSubtitleRef.current?.length || 0) - 100;
     let slicedSubtitles = roomSubtitleRef.current || [];
     if (overShoot >= 0) {
       slicedSubtitles = (roomSubtitleRef.current || []).slice(overShoot + 1);
@@ -827,12 +854,20 @@ const ConferenceRoom: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <Captioning
-            dataProducer={dataProducerRef.current as DataProducer}
+            dataProducerRef={dataProducerRef as MutableRefObject<DataProducer>}
             mediaStream={userMediaStreamRef.current as MediaStream}
-            socketId={socket?.id as string}
+            socketIdRef={socketIdRef as MutableRefObject<string>}
             room={roomId}
             setOpenCaptionsOverlay={setOpenCaptionsOverlay}
           />
+          <IonButton
+          onClick={() => {
+            setOpenCaptionsOverlay(!openCaptionsOverlay)
+          }}
+          fill="clear"
+          >
+            {openCaptionsOverlay ? "Hide Captions" : "Show Captions"}
+          </IonButton>
           <IonText
             role="button"
             slot="end"
@@ -899,15 +934,13 @@ const ConferenceRoom: React.FC = () => {
             ))}
           </IonRow>
         </IonGrid>
-        <IonToolbar>
-          {openCaptionsOverlay &&
+        {openCaptionsOverlay &&
             subTitles.map((subTitle, index) => (
-              <p key={index}>
-                <small>{subTitle.senderUserName}</small>
-                <br />
-                <span className="ion-text-wrap">{subTitle.message}</span>
-              </p>
+              <span key={index}>
+                <small>{subTitle.message}</small>
+              </span>
             ))}
+        <IonToolbar>
           <IonItem>
             <div slot="start" style={{ width: "20%" }}>
               <CallVideo
@@ -1234,28 +1267,7 @@ const ConferenceRoom: React.FC = () => {
             ></RoomMessages>
           </div>
         </IonModal>
-        <IonModal
-          isOpen={openRoomSubtitleModal}
-          onDidDismiss={() => setOpenRoomSubtitleModal(false)}
-        >
-          <div>
-            <IonToolbar>
-              <IonText
-                role="button destructive"
-                slot="end"
-                onClick={() => setOpenRoomSubtitleModal(false)}
-              >
-                <IonIcon icon={close}></IonIcon>
-              </IonText>
-            </IonToolbar>
-            <RoomMessages
-              room={roomId}
-              roomMessages={subTitles}
-              socket={socket as Socket}
-              showInput={false}
-            ></RoomMessages>
-          </div>
-        </IonModal>
+
         <IonPopover
           isOpen={openMoreToolsOverlay}
           onDidDismiss={() => setOpenMoreToolsOverlay(false)}
@@ -1363,17 +1375,17 @@ const ConferenceRoom: React.FC = () => {
           isOpen={pinnedProducerUser ? true : false}
           onDidDismiss={() => setPinnedProducerUser(null)}
         >
-          <IonItem>
-            <IonButton
-              fill="clear"
-              slot="end"
-              onClick={() => setPinnedProducerUser(null)}
-              aria-label="close zoomed user"
-            >
-              <IonIcon icon={closeCircle}></IonIcon>
-            </IonButton>
-          </IonItem>
           <div style={{ justifyContent: "center", width: "400px" }}>
+            <IonItem>
+              <IonButton
+                fill="clear"
+                slot="end"
+                onClick={() => setPinnedProducerUser(null)}
+                aria-label="close zoomed user"
+              >
+                <IonIcon icon={closeCircle}></IonIcon>
+              </IonButton>
+            </IonItem>
             <ConsumingVideo
               producerUser={pinnedProducerUser as IProducerUser}
               mediaStream={pinnedProducerUser?.mediaStream}

@@ -14,7 +14,7 @@ import {
 import { useRTCToolsContextStore } from "../../contexts/rtc";
 import { BroadcastEvents } from "../../shared/enums/events.enum";
 import { ChatMessageDTO } from "../../shared/dtos/requests/signals";
-import { useState } from "react";
+import { LegacyRef, useEffect, useRef, useState } from "react";
 import { Socket } from "socket.io-client";
 import { send } from "ionicons/icons";
 
@@ -41,9 +41,14 @@ export const RoomMessages = ({
   const textareaColWidth = 72;
   const [textareaRowHeight, setTextareaRowHeight] = useState(1);
 
+  const textInputRef = useRef<HTMLIonTextareaElement>();
+
+  useEffect(() => {
+    if(textInputRef.current) textInputRef.current.focus();
+  }, [message, roomMessages])
   return (
-    <IonPage>
-      <IonContent>
+    <>
+      <div>
         <IonList>
           {roomMessages.map((msg, i) => (
             <IonItem key={i}>
@@ -57,12 +62,14 @@ export const RoomMessages = ({
           ))}
         </IonList>
         <IonFooter>
-          <IonToolbar slot="bottom">
+          <IonToolbar>
             {showInput && (
               <IonItem>
                 <IonTextarea
+                  ref={textInputRef as LegacyRef<HTMLIonTextareaElement>}
                   label="Type in chat"
                   labelPlacement="floating"
+                  placeholder="type in message"
                   name="message"
                   onIonInput={(evt) => {
                     if (
@@ -110,7 +117,7 @@ export const RoomMessages = ({
             )}
           </IonToolbar>
         </IonFooter>
-      </IonContent>
-    </IonPage>
+      </div>
+    </>
   );
 };

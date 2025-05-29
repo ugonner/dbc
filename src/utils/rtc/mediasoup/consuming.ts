@@ -21,7 +21,7 @@ export async function consumeData(
  // dataMessagesRef: MutableRefObject<IDataMessageDTO[]>
 ): Promise<DataConsumer> {
   try {
-    if(!producerId) throw new Error("No producer ID Provided for consuming data");/ 
+    if(!producerId) throw new Error("No producer ID Provided for consuming data");
     const response: IApiResponse<DataConsumerOptions> = await new Promise(
       (resolve) => {
         const dto: CreateConsumerDTO = {
@@ -37,6 +37,7 @@ export async function consumeData(
         );
       }
     );
+    console.log("CONSUME RESPONE", response);
 
     if (response.error) throw new Error(response.error as string);
     if (response.data) {
@@ -48,8 +49,8 @@ export async function consumeData(
     throw new Error(response.message);
   } catch (error) {
     console.log("Error creating data consumer:", (error as Error).message);
-    throw new Error("something went wrong trying to play content");
   }
+  throw new Error("Error consuming data producer");
 }
 
 export async function consume(

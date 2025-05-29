@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef, useState } from "react";
 import { IProducerUser } from "../../shared/interfaces/socket-user";
 import { Model } from "vosk-browser";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
@@ -17,18 +17,19 @@ export const modelPath = `/models/vosk-model-small-en-us-0.15.tgz`;
 export interface ICaptioningProps {
   mediaStream: MediaStream;
   room: string;
-  dataProducer: DataProducer;
-  socketId: string;
+  dataProducerRef: MutableRefObject<DataProducer>;
+  socketIdRef: MutableRefObject<string>;
   setOpenCaptionsOverlay: Dispatch<SetStateAction<boolean>>;
 }
 
 export const Captioning = ({
   mediaStream,
-  dataProducer,
+  dataProducerRef,
   room,
-  socketId,
+  socketIdRef,
   setOpenCaptionsOverlay
 }: ICaptioningProps) => {
+
   const audioSampleRate = 16000;
   const voskModelRef = useRef<Model>();
   const recognizerRef = useRef<vosk.KaldiRecognizer>();
@@ -218,11 +219,12 @@ export const Captioning = ({
             message.event === "result" ? message.result.text : "";
           if (resultText && resultText.trim() !== "") {
             const dataMessage: IDataMessageDTO = {
-              socketId,
+              socketId: socketIdRef.current,
               message: resultText,
               timestamp: Date.now(),
             };
-            dataProducer.send(JSON.stringify(dataMessage));
+            console.log("send data", dataMessage)
+            dataProducerRef.current.send(JSON.stringify(dataMessage));
             setPartialCaptioins([]);
           }
         });
@@ -231,11 +233,7 @@ export const Captioning = ({
             message.event === "partialresult" ? message.result.partial : "";
 
           console.log(`Partial result: ${resultText}`);
-          setPartialCaptioins([...partialCaptions, resultText]);
-         // setCaptions(`${partialCaptions.join(" ")} ${resultText}`);
-
-          if (partialCaptions.length > 0 && partialCaptions.length % 10 === 0)
-            setOpenCaptionsOverlay(true);
+         
         });
 
         recognizerRef.current = rec;
@@ -246,55 +244,11 @@ export const Captioning = ({
         console.log("Error at useEffect", (error as Error).message);
       }
     };
-    loadRecognixer();
+    loadRecognixer().then(() => startCaptioning());
   }, []);
 
+
   return (
-    <div>
-      <IonButton
-        id="captioning-trigger"
-        className="icon-only"
-        onClick={() => {
-          if (isCaptioning) {
-            setOpenCaptionsOverlay(true);
-            stopCaptioning();
-          } else {
-            setOpenCaptionsOverlay(true);
-            startCaptioning();
-          }
-          setIsCaptioning(!isCaptioning);
-        }}
-        aria-label="toggle captioning"
-        disabled={isProcessingAction}
-      >
-        <IonText>
-          {isCaptioning ? "Turn off captions" : "Turn on Ccaptions"}
-        </IonText>
-      </IonButton>
-      {/* <IonPopover
-      isOpen={openCaptionsOverlay}
-      onDidDismiss={() => setOpenCaptionsOverlay(false)}
-      translate="yes"
-      translucent={true}
-      style={{innerWidth: "100%"}}
-      >
-        <IonItem>
-          <IonButton
-          role="destructive"
-          slot="end"
-          className="icon-only"
-          onClick={() => setOpenCaptionsOverlay(false)}
-          aria-label="close caption"
-          >
-            <IonIcon icon={closeCircle}></IonIcon>
-          </IonButton>
-        </IonItem>
-        <p>
-        {captions}
-        </p>
-      </IonPopover> */}
-      {/* uses toast's duration to dismiss popover  */}
-      
-    </div>
+   <></>
   );
 };
