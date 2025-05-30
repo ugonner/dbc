@@ -1,8 +1,6 @@
 import {
   useEffect,
-  useImperativeHandle,
   useRef,
-  useState,
   VideoHTMLAttributes,
 } from "react";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
@@ -17,6 +15,7 @@ export interface ICallVideoProps extends VideoHTMLAttributes<HTMLVideoElement> {
   containerHeight?: string;
   producerUser?: IProducerUser;
 }
+
 export const ConsumingVideo = ({ producerUser, ...props }: ICallVideoProps) => {
   const {setPinnedProducerUser} = useRTCToolsContextStore();
 
@@ -38,24 +37,19 @@ export const ConsumingVideo = ({ producerUser, ...props }: ICallVideoProps) => {
   return (
     <div>
       {producerUser?.isVideoTurnedOff && (
-        <div onDoubleClick={() => setPinnedProducerUser(producerUser)}>
-          <IonItem>
-            <IonThumbnail>
-              <img
-                src={
-                  producerUser?.avatar
-                    ? producerUser.avatar
-                    : defaultUserImageUrl
-                }
-                alt={`${producerUser?.userName} image`}
-                style={{ width: "100%", height: "auto" }}
-              />
-            </IonThumbnail>
-            <IonLabel position="stacked">
-              <h4>{producerUser?.userName}</h4>
-              <p>{producerUser?.userName} turned off video</p>
-            </IonLabel>
-          </IonItem>
+        <div 
+        style={{
+          width: "100%",
+          height:  "90%",
+          objectFit: "cover",
+          fontSize: "3em",
+          textAlign: "center",
+          justifyContent: "center",
+          backgroundColor: "black",
+          textTransform: "uppercase"
+        }}
+        onDoubleClick={() => setPinnedProducerUser(producerUser)}>
+          {(producerUser?.userName?.substring(0, 1)) || "NA"}
         </div>
       )}
       <video

@@ -75,17 +75,18 @@ export const CallVideo = (props: ICallVideoProps) => {
       setPinnedProducerUser(producer);
     }}>
       {videoTurnedOff && (
-        <div>
-          <IonItem color={"light"}>
-            <img
-              src={user.profile?.avatar || defaultUserImageUrl}
-              style={{ width: "100%", height: "auto" }}
-            />
-
-            <IonLabel position="stacked">
-              <small>{user.profile?.firstName || "You"}</small>
-            </IonLabel>
-          </IonItem>
+        <div
+         style={{
+          width: "100%",
+          height:  "90%",
+          objectFit: "cover",
+          textAlign: "center",
+          justifyContent: "center",
+          backgroundColor: "black",
+          textTransform: "uppercase"
+        }}
+       >
+        Me  
         </div>
       )}
       <video
