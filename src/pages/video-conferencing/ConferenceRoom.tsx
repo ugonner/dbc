@@ -24,6 +24,7 @@ import {
 import {
   Consumer,
   Dispatch,
+  LegacyRef,
   MutableRefObject,
   useEffect,
   useRef,
@@ -197,11 +198,12 @@ const ConferenceRoom: React.FC = () => {
     setShowModalText,
     producerAppDataRef,
     currentRoomRef,
-    captioningRoomRef,
   } = useRTCToolsContextStore();
 
   const chatMessagesRef = useRef<IRoomMessage[]>();
-  const [openCaptionsOverlay, setOpenCaptionsOverlay] = useState(true);
+  const [openCaptionsOverlay, setOpenCaptionsOverlay] = useState(false);
+  const captionsTriggerRef = useRef<HTMLIonButtonElement>();
+
   const dataProducerRef = useRef<DataProducer>();
   const socketIdRef = useRef<string>();
   const dataConsumersRef = useRef<DataConsumer[]>([]);
@@ -423,10 +425,9 @@ const ConferenceRoom: React.FC = () => {
 
         //Set captioning if accessibility priority is high
         if (
-          data.payload.accessibilityPriority === AccessibilityPriority.HIGH &&
-          captioningRoomRef.current !== roomId
+          data.payload.accessibilityPriority === AccessibilityPriority.HIGH
         ) {
-          document.getElementById("captioning-trigger")?.click();
+          if(!openCaptionsOverlay) setOpenCaptionsOverlay(true);
         }
 
         setRoomContext(currentRoomContext as IRoomContext);
@@ -554,6 +555,7 @@ const ConferenceRoom: React.FC = () => {
         video: true,
         audio: true,
       });
+      userMediaStreamRef.current = mediaStream;
     }
 
     await startProducing(
@@ -565,7 +567,7 @@ const ConferenceRoom: React.FC = () => {
     const dataProducer = await startProducingData(producerTransport);
     dataProducerRef.current = dataProducer;
 
-    userMediaStreamRef.current = mediaStream;
+    
 
     const roomContextData: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
@@ -576,12 +578,9 @@ const ConferenceRoom: React.FC = () => {
     });
     // auto turn on captioning if accessibility is set to high
     if (
-      roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH &&
-      captioningRoomRef.current !== roomId
-    ) {
-      document.getElementById("captioning-trigger")?.click();
+      roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH) {
+      if(!openCaptionsOverlay) setOpenCaptionsOverlay(true);
     }
-    console.log("ROOM CONTEXT", roomContextData);
     setRoomContext(roomContextData);
 
     await consumeAllAndSetProducingStreams(
@@ -591,6 +590,12 @@ const ConferenceRoom: React.FC = () => {
       roomId,
       roomContextData
     );
+
+    await consumeAllDataProducers(
+      socketInit,
+    consumerTransport,
+    device
+    )
 
     //--- SCREEN SHARING
     if (roomContext?.isSharing && roomContext?.screenShareProducerId) {
@@ -861,6 +866,7 @@ const ConferenceRoom: React.FC = () => {
             setOpenCaptionsOverlay={setOpenCaptionsOverlay}
           />
           <IonButton
+          ref={captionsTriggerRef as LegacyRef<HTMLIonButtonElement>}
           onClick={() => {
             setOpenCaptionsOverlay(!openCaptionsOverlay)
           }}
@@ -934,12 +940,7 @@ const ConferenceRoom: React.FC = () => {
             ))}
           </IonRow>
         </IonGrid>
-        {openCaptionsOverlay &&
-            subTitles.map((subTitle, index) => (
-              <span key={index}>
-                <small>{subTitle.message}</small>
-              </span>
-            ))}
+        
         <IonToolbar>
           <IonItem>
             <div slot="start" style={{ width: "20%" }}>
@@ -984,6 +985,14 @@ const ConferenceRoom: React.FC = () => {
                 </div>
               )}
           </IonItem>
+        <div>
+          {openCaptionsOverlay &&
+            subTitles.map((subTitle, index) => (
+              <span key={index}>
+                <small>{subTitle.message} {" "} &nbsp; </small>
+              </span>
+            ))}
+        </div>
           <IonItem>
             <IonButton
               fill="clear"

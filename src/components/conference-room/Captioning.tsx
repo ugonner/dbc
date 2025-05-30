@@ -54,11 +54,11 @@ export const Captioning = ({
       //add user's own audio
       if (mediaStream) {
         const track = mediaStream.getAudioTracks()[0];
-        if (track?.enabled) stream.addTrack(track);
+        stream.addTrack(track);
       }
 
       if (stream.getTracks().length === 0) {
-        console.log("no tracks");
+        console.log("no tracks added for captioning");
         return;
       }
 
@@ -244,8 +244,12 @@ export const Captioning = ({
         console.log("Error at useEffect", (error as Error).message);
       }
     };
-    loadRecognixer().then(() => startCaptioning());
+    loadRecognixer();
   }, []);
+
+  useEffect(() => {
+    if(mediaStream) startCaptioning();
+  }, [mediaStream])
 
 
   return (
