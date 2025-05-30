@@ -23,6 +23,7 @@ import { APIBaseURL, getData, postData } from "../../api/base";
 import { IAidService } from "../../shared/interfaces/aid-service.interface";
 import { IQueryResult } from "../../shared/interfaces/api-response";
 import { briefcase } from "ionicons/icons";
+import { AudioOutputSelector } from "./AudioOutputSelector";
 
 export interface IRoomMenuProps {
   socket: Socket;
@@ -70,7 +71,11 @@ export const RoomMenu = ({ socket, room }: IRoomMenuProps) => {
   return (
     <div>
       <IonItem>
+        
         <small slot="end" style={{fontWeight: "bold"}}> <IonIcon icon={briefcase}></IonIcon> &nbsp; {room}</small>
+        <small slot="end">
+          <AudioOutputSelector />
+        </small>
       </IonItem>
       <h4>Accessibility Preferences</h4>
       <small>Request for accessibility features, If you have difficulty hearing or listening on this event, you should request or identify that you use textual communication by selecting from below option.</small>

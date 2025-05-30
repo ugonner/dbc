@@ -48,7 +48,8 @@ export async function getAllRoomProducers(socket: Socket, room: string): Promise
   ): Promise<DataProducer | undefined> {
     try {
       const dataProducer = await sendingTransport.produceData({
-        label: "caption"
+        label: "chat",
+        protocol: "chat"
       });
       return dataProducer;
     } catch (error) {
