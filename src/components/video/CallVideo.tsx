@@ -95,6 +95,7 @@ export const CallVideo = (props: ICallVideoProps) => {
         {...videoProps}
         autoPlay
         playsInline
+        muted
         hidden={videoTurnedOff}
       ></video>
 

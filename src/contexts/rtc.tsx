@@ -44,7 +44,9 @@ export interface IRTCTools {
     setShowModalText: Dispatch<SetStateAction<string>>;
     showModalText: string;
     currentRoomRef: MutableRefObject<string>
-    captioningRoomRef: MutableRefObject<string | null>
+    captioningRoomRef: MutableRefObject<string | null>;
+    audioOuputId: string | null;
+    setAudioOuputId: Dispatch<SetStateAction<string | null>>
 }
 
 export const RTCToolsContext = createContext({} as unknown as IRTCTools)
@@ -72,8 +74,9 @@ export const RTCToolsProvider = ({children}: PropsWithChildren) => {
     const currentRoomRef = useRef<string>("");
     const captioningRoomRef = useRef<string | null>(null);
     const userMediaStreamRef = useRef<MediaStream>(null);
+    const [audioOuputId, setAudioOuputId] = useState<string | null>(null)
     const initRTCTools: IRTCTools = {
-        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStreamRef, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText, producerAppDataRef, currentRoomRef, captioningRoomRef
+        socket, setSocket, device, setDevice, producerTransport, setProducerTransport, consumerTransport, setConsumerTransport, videoProducer, setVideoProducer,audioProducer, setAudioProducer,  userMediaStreamRef, audioTurnedOff, setAudioTurnedOff, videoTurnedOff, setVideoTurnedOff, userReactionsState, setUserReactionsState, accessibilityPreferences, setAccessibilityPreferences, pinnedProducerUser, setPinnedProducerUser, chatMessages, setChatMessages, subTitles, setSubTitles, roomContext, setRoomContext, dataProducer, setDataProducer, showModalText, setShowModalText, producerAppDataRef, currentRoomRef, captioningRoomRef, audioOuputId, setAudioOuputId
     };
     
     return (

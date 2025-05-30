@@ -17,7 +17,7 @@ export interface ICallVideoProps extends VideoHTMLAttributes<HTMLVideoElement> {
 }
 
 export const ConsumingVideo = ({ producerUser, ...props }: ICallVideoProps) => {
-  const {setPinnedProducerUser} = useRTCToolsContextStore();
+  const {setPinnedProducerUser, audioOuputId} = useRTCToolsContextStore();
 
   let { mediaStream, containerHeight, containerWidth, ...videoProps } = props;
   const userReactions = producerUser
@@ -31,9 +31,24 @@ export const ConsumingVideo = ({ producerUser, ...props }: ICallVideoProps) => {
   useEffect(() => {
     if (props.mediaStream) {
       const videoElem = videoRef.current as HTMLVideoElement;
-      if (videoElem) videoElem.srcObject = props.mediaStream;
+      if (videoElem) {
+        videoElem.srcObject = props.mediaStream;
+        
+      }
     }
   }, []);
+
+  useEffect(() => {
+    const setAudioOuput = async () => {
+      try{
+        if(videoRef.current && audioOuputId) await videoRef.current.setSinkId(audioOuputId)
+        
+      }catch(error){
+        console.log("Error setting audio output", (error as Error).message)
+      }
+    }
+    setAudioOuput();
+  }, [audioOuputId])
   return (
     <div>
       {producerUser?.isVideoTurnedOff && (
