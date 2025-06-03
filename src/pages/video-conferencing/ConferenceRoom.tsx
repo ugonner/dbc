@@ -1384,18 +1384,17 @@ const ConferenceRoom: React.FC = () => {
           isOpen={pinnedProducerUser ? true : false}
           onDidDismiss={() => setPinnedProducerUser(null)}
         >
-          <div style={{ justifyContent: "center", width: "400px" }}>
-            <IonItem>
-              <IonButton
-                fill="clear"
-                slot="end"
+          <IonButton
+                expand="full"
+                color={"danger"}
                 onClick={() => setPinnedProducerUser(null)}
                 aria-label="close zoomed user"
               >
                 <IonIcon icon={closeCircle}></IonIcon>
               </IonButton>
-            </IonItem>
-            <ConsumingVideo
+          <div style={{ justifyContent: "center", width: "400px" }}>
+              
+              <ConsumingVideo
               producerUser={pinnedProducerUser as IProducerUser}
               mediaStream={pinnedProducerUser?.mediaStream}
             />
