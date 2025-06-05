@@ -1418,6 +1418,7 @@ const ConferenceRoom: React.FC = () => {
           <div style={{ justifyContent: "center", width: "400px" }}>
               
               <ConsumingVideo
+              muted={true}
               producerUser={pinnedProducerUser as IProducerUser}
               mediaStream={pinnedProducerUser?.mediaStream}
             />
