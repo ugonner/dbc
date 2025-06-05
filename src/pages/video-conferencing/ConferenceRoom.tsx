@@ -17,6 +17,7 @@ import {
   IonToolbar,
   useIonAlert,
   useIonModal,
+  useIonRouter,
   useIonToast,
   useIonViewDidEnter,
   useIonViewWillEnter,
@@ -101,6 +102,7 @@ import {
   ellipsisHorizontal,
   closeCircle,
   powerSharp,
+  navigate,
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -119,7 +121,11 @@ import { IDataMessageDTO } from "../../shared/interfaces/data-message";
 import { App } from "@capacitor/app";
 
 const ConferenceRoom: React.FC = () => {
-  const audioSampleRate = 16000;
+  const navigate = useIonRouter();
+  const socketRef = useRef<Socket>();
+
+  const currentPageRef = useRef(window.location.href);
+  
   const [ariaAssertiveNotification, setAriaAssertiveNotification] =
     useState<string>();
   const [ariaPoliteNotification, setAriaPoliteNotification] =
@@ -233,6 +239,8 @@ const ConferenceRoom: React.FC = () => {
         const socketInit = io(`${socketIOBaseURL}`);
         socketIdRef.current = socketInit?.id;
         setSocket(socketInit as Socket & Dispatch<Socket>);
+        socketRef.current = socketInit;
+
         socketInit.on(BroadcastEvents.JOIN_REQUEST_ACCEPTED, async () => {
           try {
             await setUp(socketInit);
@@ -273,11 +281,24 @@ const ConferenceRoom: React.FC = () => {
     })();
   }, []);
 
+
   useEffect(() => {
     const handlePopState = (event: any) => {
       try{
-        window.history.pushState(null, "", location.pathname + location.search);
-
+        event.preventDefault();
+        navigateOutOfRoom();
+        presentAlert({
+          header: "Room Exit",
+          message: "You have exited the room, You probably pressed a Back button but To close views click the close button (usually at the top right corner), to leave room click the switch button",
+          backdropDismiss: false,
+          buttons: [
+            {
+              text: "Ok",
+              role: "destructive",
+            }
+          ]
+        });
+        return;
       }catch(error){
         console.log("Error handling pop / bak navigation", (error as Error).message)
       }
@@ -838,11 +859,12 @@ const ConferenceRoom: React.FC = () => {
     }
   }
 
-  async function navigateOutOfRoom() {
-    socket?.disconnect();
+  function navigateOutOfRoom() {
+    socketRef.current?.disconnect();
     setSocket(undefined);
+    socketRef.current = undefined;
     stopMediaTracks(userMediaStreamRef.current as MediaStream);
-    producingStreams.forEach((producerUser) => {
+    Object.values(producingStreamsRef.current || {}).forEach((producerUser) => {
       producerUser.mediaStream?.getTracks().forEach((track) => track.stop());
     });
     userMediaStreamRef.current = null;
@@ -852,6 +874,7 @@ const ConferenceRoom: React.FC = () => {
     setDevice(null as unknown as Device);
     producerAppDataRef.current = null as unknown as IProducerAppData;
     currentRoomRef.current = "";
+    dataConsumersRef.current = null as unknown as DataConsumer[]
     navigation.push("/conference/rooms");
   }
   return (
@@ -1386,11 +1409,11 @@ const ConferenceRoom: React.FC = () => {
         >
           <IonButton
                 expand="full"
-                color={"danger"}
+                fill="clear"
                 onClick={() => setPinnedProducerUser(null)}
                 aria-label="close zoomed user"
               >
-                <IonIcon icon={closeCircle}></IonIcon>
+                close <IonIcon className="ion-margin-horizontal" icon={closeCircle}></IonIcon>
               </IonButton>
           <div style={{ justifyContent: "center", width: "400px" }}>
               
