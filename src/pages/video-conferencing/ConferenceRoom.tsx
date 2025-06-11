@@ -3,6 +3,7 @@ import {
   IonButton,
   IonCol,
   IonContent,
+  IonFooter,
   IonGrid,
   IonHeader,
   IonIcon,
@@ -74,7 +75,7 @@ import {
 } from "../../utils/rtc/mediasoup/functionalities";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
 import { useHistory, useLocation, useParams } from "react-router";
-import { socketIOBaseURL } from "../../api/base";
+import { AppBaseUrl, socketIOBaseURL } from "../../api/base";
 import { IAuthUserProfile, IProfile } from "../../shared/interfaces/user";
 import { IApiResponse } from "../../shared/dtos/responses/api-response";
 import {
@@ -119,6 +120,7 @@ import { Captioning } from "../../components/conference-room/Captioning";
 import { defaultUserImageUrl } from "../../shared/DATASETS/defaults";
 import { IDataMessageDTO } from "../../shared/interfaces/data-message";
 import { App } from "@capacitor/app";
+import { ShareContent } from "../../components/Share";
 
 const ConferenceRoom: React.FC = () => {
   const navigate = useIonRouter();
@@ -132,7 +134,7 @@ const ConferenceRoom: React.FC = () => {
     useState<string>();
 
   const navParams = useParams<{ roomId: string }>();
-  const roomId = navParams.roomId;
+  const roomId = navParams.roomId?.replace(" ", "");
   const navigation = useHistory();
 
   const storedUser = localStorage.getItem("user");
@@ -948,6 +950,13 @@ const ConferenceRoom: React.FC = () => {
                   You can start here by setting the accessibility priority of
                   this event,
                 </h6>
+                <div>
+                  <ShareContent
+                  contentName="DBC Conferencing Meeting"
+                  contentDescription={`Use this link to join ${formatCamelCaseToSentence(roomId)}`}
+                  contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
+                  />
+                </div>
               </IonCol>
             )}
             {producingStreams.map((p, i) => (
@@ -963,7 +972,8 @@ const ConferenceRoom: React.FC = () => {
             ))}
           </IonRow>
         </IonGrid>
-        
+        <IonFooter>
+          
         <IonToolbar>
           <IonItem>
             <div slot="start" style={{ width: "20%" }}>
@@ -1008,7 +1018,12 @@ const ConferenceRoom: React.FC = () => {
                 </div>
               )}
           </IonItem>
-        <div>
+        <div
+        style={{
+          height: "48px",
+          overflow: "auto"
+        }}
+        >
           {openCaptionsOverlay &&
             subTitles.map((subTitle, index) => (
               <span key={index}>
@@ -1083,8 +1098,8 @@ const ConferenceRoom: React.FC = () => {
             </IonButton>
           </IonItem>
         </IonToolbar>
-        <div id="separator" style={{ height: "60px" }}></div>
-
+        </IonFooter>
+      
         <IonModal
           isOpen={showModalText === `room-${roomId}`}
           onDidDismiss={() => setShowModalText("")}
@@ -1401,6 +1416,14 @@ const ConferenceRoom: React.FC = () => {
             >
               Participants<sub>{producingStreams.length + 1}</sub>
             </IonButton>
+            
+                <div>
+                  <ShareContent
+                  contentName="DBC Conferencing Meeting"
+                  contentDescription={`Use this link to join ${formatCamelCaseToSentence(roomId)}`}
+                  contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
+                  />
+                </div>
           </div>
         </IonPopover>
         <IonModal

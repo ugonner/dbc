@@ -19,7 +19,7 @@ const baseWsIp = /ugonna/i.test(hostname) ?  `wss://talkable.online` : `wss://${
 export const socketIOBaseURL = `${baseIp}/call`;
 export const TalkableSocketBaseURL = `${baseWsIp}/talkable`;
 
-export const AppBaseUrl = /ugonna/i.test(hostname) ? `${baseIp}` : `${baseIp}:${appPort}`;
+export const AppBaseUrl = /ugonna/i.test(hostname) ? `${baseIp}` : `${baseIp.replace(`:${serverPort}`, "")}:${appPort}`;
 export const APIBaseURL = `${baseIp}/api`;
 
 export const convertObjectLiteralToQueryString = (payload: {[key: string]: unknown}) => {
