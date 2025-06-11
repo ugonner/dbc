@@ -1318,14 +1318,13 @@ const ConferenceRoom: React.FC = () => {
         <IonPopover
           isOpen={openMoreToolsOverlay}
           onDidDismiss={() => setOpenMoreToolsOverlay(false)}
-          trigger="more-tools-toggler"
+          // trigger="more-tools-toggler"
         >
           <div
             style={{
-              maxHeight: "100px",
+              minHeight: "100px",
               padding: "10px",
               overflow: "auto",
-              textAlign: "right",
             }}
           >
             <IonButton
@@ -1417,13 +1416,19 @@ const ConferenceRoom: React.FC = () => {
               Participants<sub>{producingStreams.length + 1}</sub>
             </IonButton>
             
-                <div>
+                <IonButton
+                expand="full"
+              size="small"
+              fill="clear"
+              className="icon-only"
+              aria-label="Share meeting link"
+              >
                   <ShareContent
                   contentName="DBC Conferencing Meeting"
                   contentDescription={`Use this link to join ${formatCamelCaseToSentence(roomId)}`}
                   contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
                   />
-                </div>
+                </IonButton>
           </div>
         </IonPopover>
         <IonModal
