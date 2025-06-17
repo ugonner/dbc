@@ -21,15 +21,9 @@ import {
 import { userReactionsEmojis } from "../../shared/DATASETS/user-reaction-emojis";
 import {
   ellipseOutline,
-  mic,
-  micOff,
-  powerOutline,
-  thumbsDown,
-  thumbsUp,
-  videocam,
-  videocamOff,
 } from "ionicons/icons";
 import { IRoomContext } from "../../shared/interfaces/room";
+import { formatCamelCaseToSentence, presentToast } from "../../shared/helpers";
 
 export interface IRoomParticipantsProp {
   roomParticipants: IProducerUser[];
@@ -46,6 +40,7 @@ export const RoomParticipants = ({
   room,
   isAdmin,
   userMediaToggleAction,
+  
 }: IRoomParticipantsProp) => {
   let participants: IProducerUser[] = reactionType
     ? roomParticipants.filter((user) => user[reactionType as UserActions])
@@ -58,8 +53,12 @@ export const RoomParticipants = ({
       })
     : participants;
 
-  reactionType = reactionType || ("happy" as UserActions);
+  reactionType = reactionType || (null as unknown as UserActions);
 
+  const onCompletion = () => {
+    setOpenActionsOerlay(false);
+  }
+  
   const [presentAlert, dismissAlert] = useIonAlert();
 
   const displayAlert = (
@@ -107,11 +106,13 @@ export const RoomParticipants = ({
                 );
               }
             }
-            dismissAlert();
+            onCompletion();
           },
+          role: "destructive"
         },
         {
           text: "Cancel",
+          role: "cancel",
           handler: () => dismissAlert(),
         },
       ],
@@ -126,6 +127,7 @@ export const RoomParticipants = ({
       actionState: user[reactionType] ? false : true,
     };
     socket?.emit(BroadcastEvents.USER_REACTION, data);
+    onCompletion();
   };
 
   const toggleMedia = (
@@ -138,6 +140,7 @@ export const RoomParticipants = ({
       room,
     };
     socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+    onCompletion();
   };
 
   const [roomContext, setRoomContext] = useState<IRoomContext>();
@@ -158,7 +161,7 @@ export const RoomParticipants = ({
   });
   return (
     <div>
-      <h1>{reactionType ? reactionType : ""}</h1>
+      <h1>{reactionType ? formatCamelCaseToSentence(reactionType) : "Participants"} {roomParticipants?.length}</h1>
 
       <IonList>
         {participants.map((user, i) => (
