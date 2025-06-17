@@ -104,6 +104,10 @@ import {
   closeCircle,
   powerSharp,
   navigate,
+  caretForwardCircleSharp,
+  cloudCircle,
+  chatboxSharp,
+  peopleCircle,
 } from "ionicons/icons";
 import {
   AccessibilityPriority,
@@ -127,7 +131,7 @@ const ConferenceRoom: React.FC = () => {
   const socketRef = useRef<Socket>();
 
   const currentPageRef = useRef(window.location.href);
-  
+
   const [ariaAssertiveNotification, setAriaAssertiveNotification] =
     useState<string>();
   const [ariaPoliteNotification, setAriaPoliteNotification] =
@@ -227,7 +231,6 @@ const ConferenceRoom: React.FC = () => {
   const producingStreamsRef = useRef<IProducers>();
   const [canJoin, setCanJoin] = useState<ICanJoinAs>();
 
-  
   useIonViewWillEnter(() => {
     (async () => {
       try {
@@ -283,33 +286,36 @@ const ConferenceRoom: React.FC = () => {
     })();
   }, []);
 
-
   useEffect(() => {
     const handlePopState = (event: any) => {
-      try{
+      try {
         event.preventDefault();
         navigateOutOfRoom();
         presentAlert({
           header: "Room Exit",
-          message: "You have exited the room, You probably pressed a Back button but To close views click the close button (usually at the top right corner), to leave room click the switch button",
+          message:
+            "You have exited the room, You probably pressed a Back button but To close views click the close button (usually at the top right corner), to leave room click the switch button",
           backdropDismiss: false,
           buttons: [
             {
               text: "Ok",
               role: "destructive",
-            }
-          ]
+            },
+          ],
         });
         return;
-      }catch(error){
-        console.log("Error handling pop / bak navigation", (error as Error).message)
+      } catch (error) {
+        console.log(
+          "Error handling pop / bak navigation",
+          (error as Error).message
+        );
       }
-    }
-  window.addEventListener("popstate", handlePopState);
-  return () => {
-    window.removeEventListener("popstate", handlePopState)
-  }
-  }, [])
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   async function setUp(socketInit: Socket) {
     setShowModalText("");
@@ -447,10 +453,8 @@ const ConferenceRoom: React.FC = () => {
         }
 
         //Set captioning if accessibility priority is high
-        if (
-          data.payload.accessibilityPriority === AccessibilityPriority.HIGH
-        ) {
-          if(!openCaptionsOverlay) setOpenCaptionsOverlay(true);
+        if (data.payload.accessibilityPriority === AccessibilityPriority.HIGH) {
+          if (!openCaptionsOverlay) setOpenCaptionsOverlay(true);
         }
 
         setRoomContext(currentRoomContext as IRoomContext);
@@ -590,8 +594,6 @@ const ConferenceRoom: React.FC = () => {
     const dataProducer = await startProducingData(producerTransport);
     dataProducerRef.current = dataProducer;
 
-    
-
     const roomContextData: IRoomContext = await new Promise((resolve) => {
       socketInit.emit(
         BroadcastEvents.GET_ROOM_CONTEXT,
@@ -600,9 +602,8 @@ const ConferenceRoom: React.FC = () => {
       );
     });
     // auto turn on captioning if accessibility is set to high
-    if (
-      roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH) {
-      if(!openCaptionsOverlay) setOpenCaptionsOverlay(true);
+    if (roomContextData?.accessibilityPriority === AccessibilityPriority.HIGH) {
+      if (!openCaptionsOverlay) setOpenCaptionsOverlay(true);
     }
     setRoomContext(roomContextData);
 
@@ -614,11 +615,7 @@ const ConferenceRoom: React.FC = () => {
       roomContextData
     );
 
-    await consumeAllDataProducers(
-      socketInit,
-    consumerTransport,
-    device
-    )
+    await consumeAllDataProducers(socketInit, consumerTransport, device);
 
     //--- SCREEN SHARING
     if (roomContext?.isSharing && roomContext?.screenShareProducerId) {
@@ -876,7 +873,7 @@ const ConferenceRoom: React.FC = () => {
     setDevice(null as unknown as Device);
     producerAppDataRef.current = null as unknown as IProducerAppData;
     currentRoomRef.current = "";
-    dataConsumersRef.current = null as unknown as DataConsumer[]
+    dataConsumersRef.current = null as unknown as DataConsumer[];
     navigation.push("/conference/rooms");
   }
   return (
@@ -891,11 +888,11 @@ const ConferenceRoom: React.FC = () => {
             setOpenCaptionsOverlay={setOpenCaptionsOverlay}
           />
           <IonButton
-          ref={captionsTriggerRef as LegacyRef<HTMLIonButtonElement>}
-          onClick={() => {
-            setOpenCaptionsOverlay(!openCaptionsOverlay)
-          }}
-          fill="clear"
+            ref={captionsTriggerRef as LegacyRef<HTMLIonButtonElement>}
+            onClick={() => {
+              setOpenCaptionsOverlay(!openCaptionsOverlay);
+            }}
+            fill="clear"
           >
             {openCaptionsOverlay ? "Hide Captions" : "Show Captions"}
           </IonButton>
@@ -952,9 +949,11 @@ const ConferenceRoom: React.FC = () => {
                 </h6>
                 <div>
                   <ShareContent
-                  contentName="DBC Conferencing Meeting"
-                  contentDescription={`Use this link to join ${formatCamelCaseToSentence(roomId)}`}
-                  contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
+                    contentName="DBC Conferencing Meeting"
+                    contentDescription={`Use this link to join ${formatCamelCaseToSentence(
+                      roomId
+                    )}`}
+                    contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
                   />
                 </div>
               </IonCol>
@@ -973,133 +972,134 @@ const ConferenceRoom: React.FC = () => {
           </IonRow>
         </IonGrid>
         <IonFooter>
-          
-        <IonToolbar>
-          <IonItem>
-            <div slot="start" style={{ width: "20%" }}>
-              <CallVideo
-                socket={socket as Socket}
-                mediaStream={userMediaStreamRef.current as MediaStream}
-                room={roomId}
-                autoPlay
-                playsInline
-              />
+          <IonToolbar>
+            <IonItem>
+              <div slot="start" style={{ width: "20%" }}>
+                <CallVideo
+                  socket={socket as Socket}
+                  mediaStream={userMediaStreamRef.current as MediaStream}
+                  room={roomId}
+                  autoPlay
+                  playsInline
+                />
+              </div>
+              {openSpecialPresenter &&
+                roomContext?.specialPresenterSocketId &&
+                specialPresnterStream && (
+                  <div slot="end" style={{ width: "20%" }}>
+                    <IonItem>
+                      <IonText
+                        role="button"
+                        slot="end"
+                        className="icon-only"
+                        onClick={() => {
+                          if (
+                            roomContext?.accessibilityPriority !==
+                            AccessibilityPriority.HIGH
+                          )
+                            setOpenSpecialPresenter(false);
+                          else
+                            presentToast(
+                              `Room Accessibility Priority is set to ${AccessibilityPriority.HIGH}, so you can not remove special presenters`,
+                              4000
+                            );
+                        }}
+                        aria-label="hide special presenter screen"
+                      >
+                        <IonIcon icon={close}></IonIcon>
+                      </IonText>
+                    </IonItem>
+                    <ConsumingVideo
+                      producerUser={specialPresnterStream}
+                      mediaStream={specialPresnterStream?.mediaStream}
+                    ></ConsumingVideo>
+                  </div>
+                )}
+            </IonItem>
+            <div
+              style={{
+                height: "48px",
+                overflow: "auto",
+              }}
+            >
+              {openCaptionsOverlay &&
+                subTitles.map((subTitle, index) => (
+                  <span key={index}>
+                    <small>{subTitle.message} &nbsp; </small>
+                  </span>
+                ))}
             </div>
-            {openSpecialPresenter &&
-              roomContext?.specialPresenterSocketId &&
-              specialPresnterStream && (
-                <div slot="end" style={{ width: "20%" }}>
-                  <IonItem>
-                    <IonText
-                      role="button"
-                      slot="end"
-                      className="icon-only"
-                      onClick={() => {
-                        if (
-                          roomContext?.accessibilityPriority !==
-                          AccessibilityPriority.HIGH
-                        )
-                          setOpenSpecialPresenter(false);
-                        else
-                          presentToast(
-                            `Room Accessibility Priority is set to ${AccessibilityPriority.HIGH}, so you can not remove special presenters`,
-                            4000
-                          );
-                      }}
-                      aria-label="hide special presenter screen"
-                    >
-                      <IonIcon icon={close}></IonIcon>
-                    </IonText>
-                  </IonItem>
-                  <ConsumingVideo
-                    producerUser={specialPresnterStream}
-                    mediaStream={specialPresnterStream?.mediaStream}
-                  ></ConsumingVideo>
-                </div>
-              )}
-          </IonItem>
-        <div
-        style={{
-          height: "48px",
-          overflow: "auto"
-        }}
-        >
-          {openCaptionsOverlay &&
-            subTitles.map((subTitle, index) => (
-              <span key={index}>
-                <small>{subTitle.message} {" "} &nbsp; </small>
-              </span>
-            ))}
-        </div>
-          <IonItem>
-            <IonButton
-              fill="clear"
-              className="icon-only"
-              onClick={async () => {
-                const data: ToggleProducerStateDTO = {
-                  room: roomId,
-                  action: audioTurnedOff ? "unMute" : "mute",
-                };
-                socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleAudio(
-                  producerAppDataRef,
-                  setAudioTurnedOff,
-                  userMediaStreamRef
-                );
-              }}
-              aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
-              size="large"
-            >
-              <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
-            </IonButton>
-            <IonButton
-              fill="clear"
-              className="icon-only"
-              onClick={() => {
-                const data: ToggleProducerStateDTO = {
-                  room: roomId,
-                  action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
-                };
-                socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                toggleVIdeo(
-                  producerAppDataRef,
-                  setVideoTurnedOff,
-                  userMediaStreamRef
-                );
-              }}
-              aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
-              size="large"
-            >
-              <IonIcon icon={videoTurnedOff ? videocamOff : videocam}></IonIcon>
-            </IonButton>
+            <IonItem>
+              <IonButton
+                fill="clear"
+                className="icon-only"
+                onClick={async () => {
+                  const data: ToggleProducerStateDTO = {
+                    room: roomId,
+                    action: audioTurnedOff ? "unMute" : "mute",
+                  };
+                  socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+                  toggleAudio(
+                    producerAppDataRef,
+                    setAudioTurnedOff,
+                    userMediaStreamRef
+                  );
+                }}
+                aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
+                size="large"
+              >
+                <IonIcon icon={audioTurnedOff ? micOff : mic}></IonIcon>
+              </IonButton>
+              <IonButton
+                fill="clear"
+                className="icon-only"
+                onClick={() => {
+                  const data: ToggleProducerStateDTO = {
+                    room: roomId,
+                    action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
+                  };
+                  socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+                  toggleVIdeo(
+                    producerAppDataRef,
+                    setVideoTurnedOff,
+                    userMediaStreamRef
+                  );
+                }}
+                aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
+                size="large"
+              >
+                <IonIcon
+                  icon={videoTurnedOff ? videocamOff : videocam}
+                ></IonIcon>
+              </IonButton>
 
-            {/* <Captioning producerUsers={producingStreams} /> */}
+              {/* <Captioning producerUsers={producingStreams} /> */}
 
-            <IonButton
-              fill="clear"
-              className="icon-only"
-              id="more-tools-toggler"
-              onClick={() => setOpenMoreToolsOverlay(!openMoreToolsOverlay)}
-              aria-label="open more tools"
-              size="large"
-            >
-              <IonIcon icon={ellipsisHorizontal}></IonIcon>
-            </IonButton>
+              <IonButton
+                fill="clear"
+                className="icon-only"
+                id="more-tools-toggler"
+                onClick={() => setOpenMoreToolsOverlay(!openMoreToolsOverlay)}
+                aria-label="open more tools"
+                size="large"
+              >
+                <IonIcon icon={ellipsisHorizontal}></IonIcon>
+              </IonButton>
 
-            <IonButton
-              color={"danger"}
-              className="icon-only"
-              aria-label="leave meeting"
-              slot="end"
-              onClick={navigateOutOfRoom}
-              size="large"
-            >
-              <IonIcon color="light" icon={powerSharp}></IonIcon>
-            </IonButton>
-          </IonItem>
-        </IonToolbar>
+              <IonButton
+                color={"danger"}
+                className="icon-only"
+                aria-label="leave meeting"
+                slot="end"
+                onClick={navigateOutOfRoom}
+                size="large"
+              >
+                <IonIcon color="light" icon={powerSharp}></IonIcon>
+              </IonButton>
+            </IonItem>
+          </IonToolbar>
         </IonFooter>
-      
+
         <IonModal
           isOpen={showModalText === `room-${roomId}`}
           onDidDismiss={() => setShowModalText("")}
@@ -1186,14 +1186,16 @@ const ConferenceRoom: React.FC = () => {
             room={roomId}
             reactionType={lastUserReation}
             isAdmin={isAdmin}
+            
           />
         </IonPopover>
 
         <IonModal
           isOpen={openUsersModal}
           onDidDismiss={() => setOpenUsersModal(false)}
-          backdropDismiss={true}
         >
+          <IonContent>
+            
           <IonItem>
             <IonButton
               fill="clear"
@@ -1212,6 +1214,7 @@ const ConferenceRoom: React.FC = () => {
             isAdmin={isAdmin}
             reactionType={lastUserReation}
           />
+          </IonContent>
         </IonModal>
 
         <IonPopover
@@ -1222,9 +1225,10 @@ const ConferenceRoom: React.FC = () => {
           <div>
             {Object.keys(userReactionsEmojis).map((reaction) => (
               <IonItem key={reaction}>
-                <IonText
+                <span
                   role="button"
                   slot="start"
+                  style={{textTransform: "capitalize"}}
                   onClick={async () => {
                     const actionState = (
                       userReactionsState as { [key: string]: boolean }
@@ -1254,8 +1258,8 @@ const ConferenceRoom: React.FC = () => {
                     }
                   }}
                 >
-                  {reaction}
-                </IonText>
+                  {formatCamelCaseToSentence(reaction)}
+                </span>
                 <IonText
                   role="button"
                   slot="end"
@@ -1265,7 +1269,7 @@ const ConferenceRoom: React.FC = () => {
                     setOpenUsersModal(true);
                   }}
                 >
-                  <IonIcon icon={people}></IonIcon>
+                  <small>See People</small>
                 </IonText>
               </IonItem>
             ))}
@@ -1322,113 +1326,129 @@ const ConferenceRoom: React.FC = () => {
         >
           <div
             style={{
-              minHeight: "100px",
+              width: "400px",
               padding: "10px",
               overflow: "auto",
+              textAlign: "center",
             }}
           >
-            <IonButton
-              expand="full"
-              size="small"
-              fill="clear"
-              style={{ textAlign: "left" }}
-              onClick={() => {
-                setOpenReactionsActionSheet(!openReactionsActionSheet);
-                setOpenMoreToolsOverlay(false);
-              }}
-              className=""
-              aria-label="react"
-            >
-              <IonText>React</IonText>
-            </IonButton>
+            <IonGrid>
+              <IonRow>
+                <IonCol size="3">
+                  <IonText
+                    onClick={() => {
+                      setOpenReactionsActionSheet(!openReactionsActionSheet);
+                      setOpenMoreToolsOverlay(false);
+                    }}
+                    role="button"
+                    className=""
+                    aria-label="react"
+                    aria-haspopup={true}
+                    aria-expanded={openReactionsActionSheet}
+                  >
+                    <IonIcon icon={caretForwardCircleSharp}></IonIcon>
+                    <br /> <small>Reactions</small>
+                  </IonText>
+                </IonCol>
 
-            <IonButton
-              expand="full"
-              size="small"
-              fill="clear"
-              style={{ justifyContent: "flex-start", textAlign: "left" }}
-              onClick={async () => {
-                try {
-                  if (
-                    !navigator.mediaDevices ||
-                    !navigator.mediaDevices.getDisplayMedia
-                  )
-                    throw new Error(
-                      "Your device does not support media sharing"
-                    );
-                  const screenShareStream =
-                    await navigator.mediaDevices?.getDisplayMedia({
-                      video: true,
-                    });
-                  const videoTrack = screenShareStream.getVideoTracks()[0];
-                  videoTrack.onended = () => {
-                    const dto: CloseMediaDTO = {
-                      isScreenSharing: true,
-                      mediaKind: "video",
-                      room: roomId,
-                    };
-                    socket?.emit(BroadcastEvents.SCREEN_SHARING_STOPPED, dto);
-                  };
-                  await producerTransport?.produce({
-                    track: videoTrack,
-                    appData: { isScreenShare: true },
-                  });
-                  setOpenMoreToolsOverlay(false);
-                } catch (error) {
-                  presentToast((error as Error).message, 3000);
-                  console.log(
-                    "Error sharing screen ",
-                    (error as Error).message
-                  );
-                }
-              }}
-              aria-label="share screen"
-            >
-              <IonText>Share screen</IonText>
-            </IonButton>
+                <IonCol size="3">
+                  <IonText
+                    onClick={async () => {
+                      try {
+                        if (
+                          !navigator.mediaDevices ||
+                          !navigator.mediaDevices.getDisplayMedia
+                        )
+                          throw new Error(
+                            "Your device does not support media sharing"
+                          );
+                        const screenShareStream =
+                          await navigator.mediaDevices?.getDisplayMedia({
+                            video: true,
+                          });
+                        const videoTrack =
+                          screenShareStream.getVideoTracks()[0];
+                        videoTrack.onended = () => {
+                          const dto: CloseMediaDTO = {
+                            isScreenSharing: true,
+                            mediaKind: "video",
+                            room: roomId,
+                          };
+                          socket?.emit(
+                            BroadcastEvents.SCREEN_SHARING_STOPPED,
+                            dto
+                          );
+                        };
+                        await producerTransport?.produce({
+                          track: videoTrack,
+                          appData: { isScreenShare: true },
+                        });
+                        setOpenMoreToolsOverlay(false);
+                      } catch (error) {
+                        presentToast((error as Error).message, 3000);
+                        console.log(
+                          "Error sharing screen ",
+                          (error as Error).message
+                        );
+                      }
+                    }}
+                    aria-label="share screen"
+                  >
+                    <IonIcon icon={cloudCircle}></IonIcon>
+                    <br /> <small>Share Screen</small>
+                  </IonText>
+                </IonCol>
 
-            <IonButton
-              expand="full"
-              size="small"
-              fill="clear"
-              onClick={() => {
-                setOpenChatMessagesModal(true);
-                setOpenMoreToolsOverlay(false);
-              }}
-              aria-label="chat messages"
-              className="icon-only"
-            >
-              Messages
-            </IonButton>
+                <IonCol size="3">
+                  <IonText
+                    role="button"
+                    onClick={() => {
+                      setOpenChatMessagesModal(true);
+                      setOpenMoreToolsOverlay(false);
+                    }}
+                    aria-label="chat messages"
+                    className="icon-only"
+                  >
+                    <IonIcon icon={chatboxSharp}></IonIcon>
+                    <br /> <small>Message</small>
+                  </IonText>
+                </IonCol>
 
-            <IonButton
-              expand="full"
-              size="small"
-              fill="clear"
-              style={{ justifyContent: "flex-start", textAlign: "left" }}
-              className="icon-only"
-              onClick={() => {
-                setOpenUsersModal(true);
-                setOpenMoreToolsOverlay(false);
-              }}
-              aria-label="show participants"
-            >
-              Participants<sub>{producingStreams.length + 1}</sub>
-            </IonButton>
-            
-                <IonButton
-                expand="full"
-              size="small"
-              fill="clear"
+                <IonCol size="3">
+                  <IonText
+                    role="button"
+                    className="icon-only"
+                    onClick={() => {
+                      setOpenUsersModal(true);
+                      setOpenMoreToolsOverlay(false);
+                    }}
+                    aria-label="show participants"
+                  >
+                    <IonIcon icon={peopleCircle}></IonIcon>
+                    <br />{" "}
+                    <small>
+                      {" "}
+                      Participants<sub>{producingStreams.length + 1}</sub>
+                    </small>
+                  </IonText>
+                </IonCol>
+              </IonRow>
+            </IonGrid>
+          </div>
+          <div>
+            <IonText
+              class="ion-margin"
               className="icon-only"
               aria-label="Share meeting link"
-              >
-                  <ShareContent
-                  contentName="DBC Conferencing Meeting"
-                  contentDescription={`Use this link to join ${formatCamelCaseToSentence(roomId)}`}
-                  contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
-                  />
-                </IonButton>
+            >
+              <ShareContent
+                contentName="DBC Conferencing Meeting"
+                contentDescription={`Use this link to join ${formatCamelCaseToSentence(
+                  roomId
+                )}`}
+                contentUrl={`${AppBaseUrl}/conference/conference-room/${roomId}?userId=Anonymous`}
+              />
+            </IonText>
           </div>
         </IonPopover>
         <IonModal
@@ -1436,16 +1456,19 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setPinnedProducerUser(null)}
         >
           <IonButton
-                expand="full"
-                fill="clear"
-                onClick={() => setPinnedProducerUser(null)}
-                aria-label="close zoomed user"
-              >
-                close <IonIcon className="ion-margin-horizontal" icon={closeCircle}></IonIcon>
-              </IonButton>
+            expand="full"
+            fill="clear"
+            onClick={() => setPinnedProducerUser(null)}
+            aria-label="close zoomed user"
+          >
+            close{" "}
+            <IonIcon
+              className="ion-margin-horizontal"
+              icon={closeCircle}
+            ></IonIcon>
+          </IonButton>
           <div style={{ justifyContent: "center", width: "400px" }}>
-              
-              <ConsumingVideo
+            <ConsumingVideo
               muted={true}
               producerUser={pinnedProducerUser as IProducerUser}
               mediaStream={pinnedProducerUser?.mediaStream}
