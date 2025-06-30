@@ -17,6 +17,8 @@ import {
   toggleVIdeo,
 } from "../../utils/rtc/mediasoup/functionalities";
 import { mic, micOff, videocam, videocamOff } from "ionicons/icons";
+import { Camera } from "@capacitor/camera";
+
 
 export interface IProducingPageProps {
   joinHandler?: Function;
@@ -35,9 +37,21 @@ export const ProducingPage = (props: IProducingPageProps) => {
   const [presentToast] = useIonToast();
   const [showToolbar, setShowTaskbar] = useState(false);
 
+  const requestPermissions = async () => {
+    try{
+      const cameraPermission = await Camera.checkPermissions();
+      if((!cameraPermission.camera) || (cameraPermission.camera !== "granted")){
+        const permState = await Camera.requestPermissions();
+        if(permState.camera !== "granted") throw new Error("Permision denied, but you need to grant camera and microphone permissions");
+      }
+    }catch(error){
+      console.log("Permission Error: ", (error as Error).message)
+    }
+  }
   useEffect(() => {
     (async () => {
       try {
+        await requestPermissions();
         if (!navigator.mediaDevices)
           throw new Error("Your device does not support media sharing");
         const mediaStream = await navigator.mediaDevices?.getUserMedia({

@@ -1,4 +1,4 @@
-import { Redirect, Route } from "react-router-dom";
+import { Redirect, Route, useHistory } from "react-router-dom";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactRouter } from "@ionic/react-router";
 
@@ -40,32 +40,43 @@ import {
 } from "./contexts/async-helpers";
 
 import { AdminBoard } from "./pages/admin/AdminBoard";
+import { BaseLayout } from "./layouts/BaseLayout";
 
 setupIonicReact();
 
-const App: React.FC = () => (
+const App: React.FC = () => {
+  return (
   <IonApp>
     <RTCToolsProvider>
       <AsyncHelperProvider>
+        <BaseLayout>
+        
         <IonReactRouter>
           <IonRouterOutlet>
-            <Route path={"/:tab(conference)/rooms"} component={Rooms} />
+            <Route exact path={"/conference/rooms"} component={Rooms} />
 
             <Route
-              path={"/:tab(conference)/conference-room/:roomId"}
+            path={"/conference-room/:roomId"}
+              component={ConferenceRoom}
+            />
+            <Route
+            path={"/conference/conference-room/:roomId"}
               component={ConferenceRoom}
             />
 
             <Route exact path="/">
               <Redirect to="/conference/rooms" />
             </Route>
-            <Route path={"/admin"} component={AdminBoard}></Route>
-        
+            <Route exact path={"/admin"} component={AdminBoard}></Route>
+           <Redirect to="/conference/rooms" />
+           
           </IonRouterOutlet>
         </IonReactRouter>
+        </BaseLayout>
       </AsyncHelperProvider>
     </RTCToolsProvider>
   </IonApp>
 );
+}
 
 export default App;

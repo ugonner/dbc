@@ -17,12 +17,14 @@ import { AuthGuardContextProvider } from "../../contexts/auth/AuthGuardContext";
 import { AuthLayout } from "../../layouts/AuthLayout";
 import { CreateEventsFAB } from "../../components/events/CreteEventsFAB";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
+import { useHistory } from "react-router";
 
 export const Rooms: React.FC = () => {
   const [presentToast] = useIonToast();
   const [rooms, setRooms] = useState([] as IRoom[]);
   const {currentRoomRef} = useRTCToolsContextStore();
-
+  const router = useHistory();
+  
   useEffect(() => {
     (async () => {
       try {
@@ -49,7 +51,10 @@ export const Rooms: React.FC = () => {
                   <IonButton
                   fill="clear"
                     slot="end"
-                    routerLink={`/conference/conference-room/${room.roomId}`}
+                    
+                    onClick={() => {
+                      router.push(`/conference/conference-room/${room.roomId}`)
+                    }}
                   >
                     {currentRoomRef.current === room.roomId ? "Rejoin" : "Join"}
                   </IonButton>

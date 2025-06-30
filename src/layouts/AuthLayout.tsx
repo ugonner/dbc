@@ -16,7 +16,7 @@ import {
 } from "../contexts/auth/AuthGuardContext";
 import { Dispatch, PropsWithChildren, useState } from "react";
 import { LoginOrRegister } from "../components/auth/LoginOrRegister";
-import { flash } from "ionicons/icons";
+import { flash, logInSharp, logOutSharp } from "ionicons/icons";
 
 export interface IAuthLayoutProps extends PropsWithChildren {
   pageTitle?: string;
@@ -40,13 +40,15 @@ export const AuthLayout = ({ pageTitle, children }: IAuthLayoutProps) => {
 
           <IonButton
             slot="end"
+            fill="clear"
+            aria-label={isLoggedIn ? "log out" : "log in"}
             onClick={() => {
               if (isLoggedIn) logout();
               //else setShowModalText("login-or-register-modal");
               setOpenAuthModal(!openAuthModal as boolean & Dispatch<boolean>);
             }}
           >
-            {isLoggedIn ? "logout" : "login"}
+            {isLoggedIn ? <IonIcon icon={logOutSharp}></IonIcon> : <IonIcon icon={logInSharp}></IonIcon>}
           </IonButton>
         </IonToolbar>
       </IonHeader>

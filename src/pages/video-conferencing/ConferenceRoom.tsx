@@ -16,6 +16,7 @@ import {
   IonText,
   IonTitle,
   IonToolbar,
+  isPlatform,
   useIonAlert,
   useIonModal,
   useIonRouter,
@@ -287,6 +288,24 @@ const ConferenceRoom: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const handleBackButton = async (event: any) => {
+      try {
+        if (event.preventDefault) event.preventDefault();
+        await presentAlert({
+          message: `To close a view and return to room, click the close icon at the top right corner`,
+          buttons: [
+            {
+              text: "Noted",
+              role: "destructive",
+            },
+          ],
+        });
+        return;
+      } catch (error) {
+        console.log("Error: handling back button", (error as Error).message);
+      }
+    };
+
     const handlePopState = (event: any) => {
       try {
         event.preventDefault();
@@ -311,12 +330,43 @@ const ConferenceRoom: React.FC = () => {
         );
       }
     };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
+
+    if (isPlatform("capacitor")) {
+      App.addListener("backButton", handleBackButton);
+    } else {
+      window.addEventListener("popstate", handlePopState);
+      return () => {
+        window.removeEventListener("popstate", handlePopState);
+      };
+    }
   }, []);
 
+  const videoTurnedOffByAppStateRef = useRef(false);
+  useIonViewWillEnter(() => {
+    const handleAppStateChange = async (event: any) => {
+      try {
+        const appState = await App.getState();
+        if (appState.isActive && producerAppDataRef.current.isVideoTurnedOff && videoTurnedOffByAppStateRef.current) {
+          toggleUserVideo();
+        }
+
+        if (!appState.isActive && (!producerAppDataRef.current.isVideoTurnedOff)) {
+          toggleUserVideo();
+          videoTurnedOffByAppStateRef.current = true;
+        }
+      } catch (error) {
+        console.log(
+          "Error handling app state change",
+          (error as Error).message
+        );
+      }
+    };
+
+    App.addListener("appStateChange", handleAppStateChange);
+    return () => {
+      App.removeAllListeners()
+    }
+  }, []);
   async function setUp(socketInit: Socket) {
     setShowModalText("");
     await joinRoom(socketInit, { room: roomId, userId, userName, avatar });
@@ -393,9 +443,11 @@ const ConferenceRoom: React.FC = () => {
         const reactionMsg = data.actionState
           ? `is ${data.action}`
           : `stopped ${data.action}`;
-        setAriaPoliteNotification(
-          `${data?.userName || "Participant"} ${reactionMsg}`
-        );
+       
+        const msg =    `${data?.userName || "Participant"} ${reactionMsg}`
+       
+          setAriaPoliteNotification(msg);
+          presentToast(msg, 3000);
         await addReRenderProducers(
           data,
           socketInit,
@@ -810,14 +862,7 @@ const ConferenceRoom: React.FC = () => {
         ...data,
       };
       roomProducers[`${socketId}`] = producerUser;
-      if (eventName === BroadcastEvents.USER_REACTION) {
-        setLastUser(producerUser);
-        setLastUserReaction(
-          (data as IProducerUser & { action: UserActions }).action
-        );
-        setOpenLastUserModal(true);
-        autoDismissLastUserModal();
-      }
+      
       if (action === "remove") delete roomProducers[`${socketId}`];
       producingStreamsRef.current = roomProducers;
       const producingArr = Object.values(roomProducers);
@@ -875,6 +920,32 @@ const ConferenceRoom: React.FC = () => {
     currentRoomRef.current = "";
     dataConsumersRef.current = null as unknown as DataConsumer[];
     navigation.push("/conference/rooms");
+  }
+
+  async function toggleUserAudio() {
+    try {
+      const data: ToggleProducerStateDTO = {
+        room: roomId,
+        action: audioTurnedOff ? "unMute" : "mute",
+      };
+      socketRef.current?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+      toggleAudio(producerAppDataRef, setAudioTurnedOff, userMediaStreamRef);
+    } catch (error) {
+      console.log("Error toggling usser audio", (error as Error).message);
+    }
+  }
+
+  async function toggleUserVideo() {
+    try {
+      const data: ToggleProducerStateDTO = {
+        room: roomId,
+        action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
+      };
+      socketRef.current?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
+      toggleVIdeo(producerAppDataRef, setVideoTurnedOff, userMediaStreamRef);
+    } catch (error) {
+      console.log("Error toggleing user video", (error as Error).message);
+    }
   }
   return (
     <IonPage>
@@ -1033,18 +1104,7 @@ const ConferenceRoom: React.FC = () => {
               <IonButton
                 fill="clear"
                 className="icon-only"
-                onClick={async () => {
-                  const data: ToggleProducerStateDTO = {
-                    room: roomId,
-                    action: audioTurnedOff ? "unMute" : "mute",
-                  };
-                  socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                  toggleAudio(
-                    producerAppDataRef,
-                    setAudioTurnedOff,
-                    userMediaStreamRef
-                  );
-                }}
+                onClick={toggleUserAudio}
                 aria-label={audioTurnedOff ? "turn on audio" : "turn off audio"}
                 size="large"
               >
@@ -1053,17 +1113,9 @@ const ConferenceRoom: React.FC = () => {
               <IonButton
                 fill="clear"
                 className="icon-only"
-                onClick={() => {
-                  const data: ToggleProducerStateDTO = {
-                    room: roomId,
-                    action: videoTurnedOff ? "turnOnVideo" : "turnOffVideo",
-                  };
-                  socket?.emit(BroadcastEvents.TOGGLE_PRODUCER_STATE, data);
-                  toggleVIdeo(
-                    producerAppDataRef,
-                    setVideoTurnedOff,
-                    userMediaStreamRef
-                  );
+                onClick={async () => {
+                  await toggleUserVideo();
+                  videoTurnedOffByAppStateRef.current = false;
                 }}
                 aria-label={audioTurnedOff ? "turn on video" : "turn off video"}
                 size="large"
@@ -1186,7 +1238,6 @@ const ConferenceRoom: React.FC = () => {
             room={roomId}
             reactionType={lastUserReation}
             isAdmin={isAdmin}
-            
           />
         </IonPopover>
 
@@ -1195,25 +1246,24 @@ const ConferenceRoom: React.FC = () => {
           onDidDismiss={() => setOpenUsersModal(false)}
         >
           <IonContent>
-            
-          <IonItem>
-            <IonButton
-              fill="clear"
-              slot="end"
-              className="icon-only"
-              onClick={() => setOpenUsersModal(false)}
-              aria-label="close modal"
-            >
-              <IonIcon icon={closeCircle} />
-            </IonButton>
-          </IonItem>
-          <RoomParticipants
-            roomParticipants={producingStreams}
-            socket={socket as Socket}
-            room={roomId}
-            isAdmin={isAdmin}
-            reactionType={lastUserReation}
-          />
+            <IonItem>
+              <IonButton
+                fill="clear"
+                slot="end"
+                className="icon-only"
+                onClick={() => setOpenUsersModal(false)}
+                aria-label="close modal"
+              >
+                <IonIcon icon={closeCircle} />
+              </IonButton>
+            </IonItem>
+            <RoomParticipants
+              roomParticipants={producingStreams}
+              socket={socket as Socket}
+              room={roomId}
+              isAdmin={isAdmin}
+              reactionType={lastUserReation}
+            />
           </IonContent>
         </IonModal>
 
@@ -1228,7 +1278,7 @@ const ConferenceRoom: React.FC = () => {
                 <span
                   role="button"
                   slot="start"
-                  style={{textTransform: "capitalize"}}
+                  style={{ textTransform: "capitalize" }}
                   onClick={async () => {
                     const actionState = (
                       userReactionsState as { [key: string]: boolean }
@@ -1395,7 +1445,7 @@ const ConferenceRoom: React.FC = () => {
                     aria-label="share screen"
                   >
                     <IonIcon icon={cloudCircle}></IonIcon>
-                    <br /> <small>Share Screen</small>
+                    <br /> <small style={{fontSize: "0.5em"}}>Share Screen</small>
                   </IonText>
                 </IonCol>
 
