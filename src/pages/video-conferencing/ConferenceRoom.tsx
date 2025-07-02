@@ -667,6 +667,7 @@ const ConferenceRoom: React.FC = () => {
       roomContextData
     );
 
+    //-- function also takes in user's own dataProducer
     await consumeAllDataProducers(socketInit, consumerTransport, device);
 
     //--- SCREEN SHARING
@@ -695,6 +696,8 @@ const ConferenceRoom: React.FC = () => {
   ) {
     const roomProducers = await getAllRoomProducers(socket, roomId);
     const roomUserDetails = Object.values(roomProducers || {});
+    //Add user's data producer too.
+    if(dataProducerRef.current) roomUserDetails.push({dataProducerId: dataProducerRef.current.id} as IProducerUser)
     const promiseRes = await Promise.allSettled(
       roomUserDetails.map((user) =>
         consumeData(

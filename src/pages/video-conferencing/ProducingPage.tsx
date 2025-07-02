@@ -4,6 +4,7 @@ import {
   IonGrid,
   IonIcon,
   IonItem,
+  IonLabel,
   IonRow,
   IonToolbar,
   useIonToast,
@@ -79,19 +80,20 @@ export const ProducingPage = (props: IProducingPageProps) => {
     <div>
       <IonGrid>
         <IonRow>
-          <IonCol sizeMd="6" sizeSm="12">
-            <CallVideo mediaStream={userMediaStreamRef.current as MediaStream} />
+          <IonCol size="12">
+            <div className="ion-text-center">
+              <IonLabel>
+                <h2>Lobby</h2>
+                <p>Have A Preview And Join</p>
+              </IonLabel>
+            </div>
+            <div style={{height: "400px", width: "auto", objectFit: "contain", justifyContent: "center", textAlign: "center"}}>
+              <CallVideo mediaStream={userMediaStreamRef.current as MediaStream} />
+            </div>
           </IonCol>
-          <IonCol sizeMd="6" sizeSm="12">
-            <h3>Have A Preview</h3>
-            <p>Take a preview of your looks into this event.</p>
-            <p>
-              When you are set to join click the "join" or "ask to join" button.
-              If you clicked the "ask to join" button, Please wait for an admin
-              to accept you into the event. If no admin is present in the event,
-              sorry you can not be admitted in.
-            </p>
-
+          </IonRow>
+          <IonRow>
+          <IonCol size="12">
             {showToolbar && (
               <IonToolbar>
                 <IonItem>

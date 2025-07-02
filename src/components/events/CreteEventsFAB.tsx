@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { IonApp, IonButton, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonIcon, IonItem, IonModal, IonPopover, IonRow } from '@ionic/react';
-import { add, share, heart, pencil, warningOutline, timeSharp, timeOutline } from 'ionicons/icons';
+import { IonApp, IonButton, IonCol, IonContent, IonFab, IonFabButton, IonFabList, IonGrid, IonIcon, IonItem, IonLabel, IonModal, IonPopover, IonRow } from '@ionic/react';
+import { add, share, heart, pencil, warningOutline, timeSharp, timeOutline, calendarClear, calendarSharp, closeCircle } from 'ionicons/icons';
 import { CreateRoom, ICreateRoomProps } from '../../pages/video-conferencing/CreateRoom';
 
 export const CreateEventsFAB: React.FC = () => {
@@ -18,21 +18,27 @@ export const CreateEventsFAB: React.FC = () => {
             isOpen={openEventTypeOverlay}
             onDidDismiss={() =>  setOpenEventTypeOverlay(false)}
             >
-              <IonItem>
-                <IonButton
-                slot='end'
-                onClick={() => setOpenCreateEventOverlay(false)}
-                aria-label='close event type view'
-                fill='clear'
-                >x</IonButton>
+             <div>
+              <IonGrid>
+                <IonRow>
+                  <IonCol size='12'>
+                    
+              <IonItem className='ion-margin-horizontal'>
+                <IonLabel>
+                  <h3>Create Event</h3>
+                </IonLabel>
               </IonItem>
+                  </IonCol>
+                </IonRow>
+              </IonGrid>
+             </div>
              <div style={{width: "400px", overflow: "auto"}}>
                <IonGrid>
                 <IonRow>
-                  <IonCol size='3'>
-                    <IonButton
-                    className='ion-margin'
-                    fill='clear'
+                  <IonCol size='6'>
+                    <div
+                    className='ion-text-center'
+                    role='button'
                     onClick={() => {
                       setCreateRoomProps({
                         onSuccess: () => { setOpenCreateEventOverlay(false)},
@@ -40,20 +46,23 @@ export const CreateEventsFAB: React.FC = () => {
                       })
                       setOpenEventTypeOverlay(false);
                       setOpenCreateEventOverlay(true);
-                    }}>
-                      <IonIcon icon={warningOutline}></IonIcon>
+                    }}
+                    
+                    aria-haspopup={true}
+                    aria-expanded={openCreateEventOverlay}
+                    aria-label='create instant event'
+                    >
+                      <IonIcon className='ion-margin' size='large' icon={timeSharp}></IonIcon>
                       <br/>
                       <small>Instant Meeting</small>
-                    </IonButton>
+                    </div>
                   </IonCol>
-
-                  <IonCol size='3'></IonCol>
+                  
 
                   
-                  <IonCol size='3'>
-                    <IonButton
-                    className='ion-margin'
-                    fill='clear'
+                  <IonCol size='6'>
+                    <div
+                    className='ion-text-center'
                     onClick={() => {
                       setCreateRoomProps({
                         onSuccess: () => { setOpenCreateEventOverlay(false)},
@@ -61,11 +70,15 @@ export const CreateEventsFAB: React.FC = () => {
                       })
                       setOpenEventTypeOverlay(false);
                       setOpenCreateEventOverlay(true);
-                    }}>
-                      <IonIcon icon={timeOutline}></IonIcon>
+                    }}
+                    aria-haspopup={true}
+                    aria-expanded={openCreateEventOverlay}
+                    aria-label='create a scheduled event'
+                    >
+                      <IonIcon className='ion-margin' size='large' icon={calendarSharp}></IonIcon>
                       <br/>
                       <small>Schedule Meeting</small>
-                    </IonButton>
+                    </div>
                   </IonCol>
                 </IonRow>
               </IonGrid>

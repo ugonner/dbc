@@ -28,8 +28,8 @@ export interface ILoginOrCreateUserProps {
   onSuccess: Function;
 }
 
-export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
-  const {setLoading} = useAsyncHelpersContext();
+export const LoginOrRegister = ({ onSuccess }: ILoginOrCreateUserProps) => {
+  const { setLoading } = useAsyncHelpersContext();
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [authUser, setAuthUser] = useState({} as IAuthUser);
@@ -48,7 +48,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
 
   const submit = async () => {
     try {
-      setLoading({isLoading: true, loadingMessage: ""})
+      setLoading({ isLoading: true, loadingMessage: "" });
       const res = isSignUp
         ? await postData(`${APIBaseURL}/auth/register`, {
             method: "post",
@@ -64,14 +64,12 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
         setIsLoggedIn(true as boolean & Dispatch<boolean>);
       }
       presentToast("Successful Access", 3000);
-      setLoading({isLoading: false, loadingMessage: ""})
+      setLoading({ isLoading: false, loadingMessage: "" });
       setOpenAuthModal(false as unknown as boolean & Dispatch<boolean>);
       onSuccess();
       window.location.reload();
-     
-      
     } catch (error) {
-      setLoading({isLoading: false, loadingMessage: ""})
+      setLoading({ isLoading: false, loadingMessage: "" });
       presentToast((error as Error).message, 3000);
       console.log((error as Error).message, "Error signin or registring user");
     }
@@ -92,8 +90,11 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
             >
               Use Email
             </IonSegmentButton>
-            <IonSegmentButton value={1} 
-              aria-label="Use phone number for login or sign up" onClick={() => setUsePhoneNumber(true)}>
+            <IonSegmentButton
+              value={1}
+              aria-label="Use phone number for login or sign up"
+              onClick={() => setUsePhoneNumber(true)}
+            >
               Use PhoneNumber
             </IonSegmentButton>
           </IonSegment>
@@ -137,7 +138,7 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
                 ></IonInput>
               </IonItem>
               <IonButton
-              fill="clear"
+                fill="clear"
                 size="small"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -179,15 +180,25 @@ export const LoginOrRegister = ({onSuccess}: ILoginOrCreateUserProps) => {
               <></>
             )}
             <div className="form-group">
-              <IonButton expand="full" onClick={submit}>
+              <IonButton size="large" expand="full" onClick={submit}>
                 {isSignUp ? "Register" : "Login"}
               </IonButton>
               <div>
-                <IonButton expand="full" fill="clear" onClick={() => setIsSignUp(true)}>
-                  New Account, Sign up{" "}
+                <IonButton
+                  size="large"
+                  expand="full"
+                  fill="clear"
+                  onClick={() => setIsSignUp(true)}
+                >
+                  <small style={{textTransform: "capitalize", fontWeight: "bold"}}>New Account, Sign up</small>
                 </IonButton>
-                <IonButton expand="full" fill="clear" onClick={() => setIsSignUp(false)}>
-                  Existing User, Log In{" "}
+                <IonButton
+                  size="large"
+                  expand="full"
+                  fill="clear"
+                  onClick={() => setIsSignUp(false)}
+                >
+                  <small style={{textTransform: "capitalize", fontWeight: "bold"}}>Existing User, Log In</small>
                 </IonButton>
               </div>
             </div>
