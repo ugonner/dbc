@@ -4,9 +4,9 @@ import {
   IonGrid,
   IonIcon,
   IonItem,
+  IonLabel,
   IonRow,
   IonToolbar,
-  useIonToast,
 } from "@ionic/react";
 import { CallVideo } from "../../components/video/CallVideo";
 import { RouteComponentProps, useHistory, useParams } from "react-router-dom";
@@ -17,6 +17,9 @@ import {
   toggleVIdeo,
 } from "../../utils/rtc/mediasoup/functionalities";
 import { mic, micOff, videocam, videocamOff } from "ionicons/icons";
+import { Camera } from "@capacitor/camera";
+import { usePresentToast } from "../../shared/helpers";
+
 
 export interface IProducingPageProps {
   joinHandler?: Function;
@@ -32,12 +35,25 @@ export const ProducingPage = (props: IProducingPageProps) => {
     audioTurnedOff,
     producerAppDataRef,
   } = useRTCToolsContextStore();
-  const [presentToast] = useIonToast();
+  
+    const {presentToast} = usePresentToast();
   const [showToolbar, setShowTaskbar] = useState(false);
 
+  const requestPermissions = async () => {
+    try{
+      const cameraPermission = await Camera.checkPermissions();
+      if((!cameraPermission.camera) || (cameraPermission.camera !== "granted")){
+        const permState = await Camera.requestPermissions();
+        if(permState.camera !== "granted") throw new Error("Permision denied, but you need to grant camera and microphone permissions");
+      }
+    }catch(error){
+      console.log("Permission Error: ", (error as Error).message)
+    }
+  }
   useEffect(() => {
     (async () => {
       try {
+        await requestPermissions();
         if (!navigator.mediaDevices)
           throw new Error("Your device does not support media sharing");
         const mediaStream = await navigator.mediaDevices?.getUserMedia({
@@ -65,19 +81,20 @@ export const ProducingPage = (props: IProducingPageProps) => {
     <div>
       <IonGrid>
         <IonRow>
-          <IonCol sizeMd="6" sizeSm="12">
-            <CallVideo mediaStream={userMediaStreamRef.current as MediaStream} />
+          <IonCol size="12">
+            <div className="ion-text-center">
+              <IonLabel>
+                <h2>Lobby</h2>
+                <p>Have A Preview And Join</p>
+              </IonLabel>
+            </div>
+            <div style={{height: "400px", width: "auto", objectFit: "contain", justifyContent: "center", textAlign: "center"}}>
+              <CallVideo mediaStream={userMediaStreamRef.current as MediaStream} />
+            </div>
           </IonCol>
-          <IonCol sizeMd="6" sizeSm="12">
-            <h3>Have A Preview</h3>
-            <p>Take a preview of your looks into this event.</p>
-            <p>
-              When you are set to join click the "join" or "ask to join" button.
-              If you clicked the "ask to join" button, Please wait for an admin
-              to accept you into the event. If no admin is present in the event,
-              sorry you can not be admitted in.
-            </p>
-
+          </IonRow>
+          <IonRow>
+          <IonCol size="12">
             {showToolbar && (
               <IonToolbar>
                 <IonItem>

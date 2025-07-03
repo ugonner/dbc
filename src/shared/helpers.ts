@@ -1,12 +1,22 @@
 import { TextToSpeech } from "@capacitor-community/text-to-speech";
 import { useIonToast } from "@ionic/react";
-import { Producer } from "mediasoup-client/lib/types";
+
 
 export const isObjectEmpty = (obj: object) => Object.keys(obj).length === 0;
 
-export function presentToast(message: string) {
-  const [presentToastMessage] = useIonToast();
-  presentToastMessage({ message, duration: 3000, position: "top" });
+export interface IUsePresentToastResult {
+  presentToast: (message: string, duration?: number) => void;
+  dismissToast: Function
+}
+
+export const  usePresentToast = (): IUsePresentToastResult => {
+  const [presentToastMessage, dismissToast] = useIonToast();
+  const presentToast = (message: string, duration = 4000) => {
+    presentToastMessage({ message, duration, position: "bottom", color: "dark" })
+  }
+  return {
+    presentToast, dismissToast
+  }
 }
 
 export const formatCamelCaseToSentence = (camelCasedString: string): string => {

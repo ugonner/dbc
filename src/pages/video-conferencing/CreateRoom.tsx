@@ -1,9 +1,6 @@
 import { FormEvent, FormEventHandler, useState } from "react";
 import { IRoom } from "../../shared/interfaces/room";
-import { AuthGuardContextProvider } from "../../contexts/auth/AuthGuardContext";
-import { AuthLayout } from "../../layouts/AuthLayout";
 import {
-  DatetimeChangeEventDetail,
   DatetimeCustomEvent,
   IonButton,
   IonContent,
@@ -21,13 +18,16 @@ import {
 } from "@ionic/react";
 import { APIBaseURL, postData } from "../../api/base";
 import { useHistory } from "react-router";
+import { usePresentToast } from "../../shared/helpers";
 
 export interface ICreateRoomProps {
   roomType?: "instant" | "scheduled";
-  onSuccess: Function
+  onSuccess: Function;
 }
 
 export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
+  
+    const {presentToast} = usePresentToast();
   const [room, setRoom] = useState({} as IRoom);
   const [openEventDateOverlay, setOpenEventDateOverlay] = useState(false);
   const router = useHistory();
@@ -46,15 +46,16 @@ export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
 
   const createEvent = async () => {
     try {
-
+      if (roomType === "instant") room.startTime = new Date().toISOString();
       const res = await postData(`${APIBaseURL}/room`, {
         method: "post",
         ...room,
       });
       onSuccess();
-    window.location.href = (`/conference/rooms`);
+      window.location.href = `/conference/rooms`;
     } catch (error) {
       console.log("Error creating event room", (error as Error).message);
+      presentToast((error as Error).message, 4000);
     }
   };
   return (
@@ -65,7 +66,7 @@ export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
       <IonContent>
         <div className="form-grop">
           <form>
-            <IonItem className="no-lines">
+            <IonItem className="no-lines ion-margin">
               <IonInput
                 type="text"
                 name="roomName"
@@ -75,22 +76,28 @@ export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
                 onInput={handleCustomInput}
               />
             </IonItem>
+            {roomType === "scheduled" && (
+              <div>
+                <IonItem className="no-lines">
+                  <IonLabel>Start Time</IonLabel>
+                  <IonDatetimeButton datetime="event-start-time"></IonDatetimeButton>
+                </IonItem>
 
-            <IonItem className="no-lines">
-              <IonLabel>Start Time</IonLabel>
-              <IonDatetimeButton datetime="event-start-time"></IonDatetimeButton>
-            </IonItem>
-
-            <IonModal isOpen={openEventDateOverlay} onDidDismiss={() => setOpenEventDateOverlay(false)} keepContentsMounted={true}>
-              <IonDatetime
-                id="event-start-time"
-                name="startTime"
-                aria-label="Select start date for the event"
-                onIonChange={handleCustomInput}
-              ></IonDatetime>
-            </IonModal>
-
-            <IonItem className="no-lines">
+                <IonModal
+                  isOpen={openEventDateOverlay}
+                  onDidDismiss={() => setOpenEventDateOverlay(false)}
+                  keepContentsMounted={true}
+                >
+                  <IonDatetime
+                    id="event-start-time"
+                    name="startTime"
+                    aria-label="Select start date for the event"
+                    onIonChange={handleCustomInput}
+                  ></IonDatetime>
+                </IonModal>
+              </div>
+            )}
+            <IonItem className="no-lines ion-margin">
               <IonSelect
                 name="duration"
                 onIonChange={handleCustomInput}
@@ -105,11 +112,10 @@ export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
                 ))}
               </IonSelect>
             </IonItem>
-            <IonItem className="no-lines">
               <IonButton expand="full" onClick={createEvent}>
                 Create Event
               </IonButton>
-            </IonItem>
+            
           </form>
         </div>
       </IonContent>

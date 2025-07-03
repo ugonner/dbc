@@ -14,7 +14,8 @@
   "dependencies": {
     "@capacitor-community/text-to-speech": "^6.0.0",
     "@capacitor/android": "^7.2.0",
-    "@capacitor/app": "^7.0.0",
+    "@capacitor/app": "^7.0.1",
+    "@capacitor/camera": "^7.0.1",
     "@capacitor/cli": "^7.0.1",
     "@capacitor/core": "^7.0.1",
     "@ionic/react": "^8.0.0",
@@ -31,6 +32,7 @@
     "react-qr-code": "^2.0.15",
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
+    "sharp": "^0.34.2",
     "socket.io-client": "^4.7.5",
     "vosk-browser": "^0.0.8",
     "wav": "^1.0.2"

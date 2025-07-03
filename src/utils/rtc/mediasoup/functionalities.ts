@@ -95,7 +95,7 @@ export async function canJoinRoom(
       (user) => user.userId === userId
     );
     if (aidServiceProvided) canJoinAs.isAidServiceProvider = true;
-    if (aidServiceProvided?.aidServiceId === 2)
+    if (aidServiceProvided?.aidServiceId === 1)
       canJoinAs.isSpecialPresenter = true;
 
     if (
