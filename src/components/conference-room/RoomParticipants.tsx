@@ -23,7 +23,7 @@ import {
   ellipseOutline,
 } from "ionicons/icons";
 import { IRoomContext } from "../../shared/interfaces/room";
-import { formatCamelCaseToSentence, presentToast } from "../../shared/helpers";
+import { formatCamelCaseToSentence } from "../../shared/helpers";
 
 export interface IRoomParticipantsProp {
   roomParticipants: IProducerUser[];

@@ -20,8 +20,6 @@ import {
   useIonAlert,
   useIonModal,
   useIonRouter,
-  useIonToast,
-  useIonViewDidEnter,
   useIonViewWillEnter,
 } from "@ionic/react";
 import {
@@ -115,7 +113,7 @@ import {
   ICanJoinAs,
   IRoomContext,
 } from "../../shared/interfaces/room";
-import { formatCamelCaseToSentence, speakText } from "../../shared/helpers";
+import { formatCamelCaseToSentence, speakText, usePresentToast } from "../../shared/helpers";
 import { RoomMenu } from "../../components/conference-room/RoomMenu";
 import {
   IRoomMessage,
@@ -181,7 +179,8 @@ const ConferenceRoom: React.FC = () => {
   const [openSpecialPresenter, setOpenSpecialPresenter] = useState(true);
   const [screenSharingStream, setScreenSharingStream] = useState<MediaStream>();
   const [openMoreToolsOverlay, setOpenMoreToolsOverlay] = useState(false);
-  const [presentToast] = useIonToast();
+  
+    const {presentToast} = usePresentToast();
 
   const {
     socket,

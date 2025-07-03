@@ -7,7 +7,6 @@ import {
   IonPage,
   IonTitle,
   IonToolbar,
-  useIonToast,
 } from "@ionic/react";
 import ExploreContainer from "../../components/ExploreContainer";
 import { useEffect, useState } from "react";
@@ -18,9 +17,11 @@ import { AuthLayout } from "../../layouts/AuthLayout";
 import { CreateEventsFAB } from "../../components/events/CreteEventsFAB";
 import { useRTCToolsContextStore } from "../../contexts/rtc";
 import { useHistory } from "react-router";
+import { usePresentToast } from "../../shared/helpers";
 
 export const Rooms: React.FC = () => {
-  const [presentToast] = useIonToast();
+  
+    const {presentToast} = usePresentToast();
   const [rooms, setRooms] = useState([] as IRoom[]);
   const {currentRoomRef} = useRTCToolsContextStore();
   const router = useHistory();

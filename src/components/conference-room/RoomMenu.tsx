@@ -10,7 +10,7 @@ import {
 } from "@ionic/react";
 import { Socket } from "socket.io-client";
 import { IAccessibilityPreferences, IProducerUser } from "../../shared/interfaces/socket-user";
-import { formatCamelCaseToSentence, presentToast } from "../../shared/helpers";
+import { formatCamelCaseToSentence, usePresentToast } from "../../shared/helpers";
 import { BroadcastEvents } from "../../shared/enums/events.enum";
 import { AccessibilityPreferenceDTO } from "../../shared/dtos/requests/signals";
 import {
@@ -31,6 +31,9 @@ export interface IRoomMenuProps {
 }
 
 export const RoomMenu = ({ socket, room }: IRoomMenuProps) => {
+  
+  
+    const {presentToast} = usePresentToast();
   const { accessibilityPreferences, setAccessibilityPreferences } =
     useRTCToolsContextStore();
   const accessibilityPreferenceSample: IAccessibilityPreferences = {

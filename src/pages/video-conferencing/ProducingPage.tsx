@@ -7,7 +7,6 @@ import {
   IonLabel,
   IonRow,
   IonToolbar,
-  useIonToast,
 } from "@ionic/react";
 import { CallVideo } from "../../components/video/CallVideo";
 import { RouteComponentProps, useHistory, useParams } from "react-router-dom";
@@ -19,6 +18,7 @@ import {
 } from "../../utils/rtc/mediasoup/functionalities";
 import { mic, micOff, videocam, videocamOff } from "ionicons/icons";
 import { Camera } from "@capacitor/camera";
+import { usePresentToast } from "../../shared/helpers";
 
 
 export interface IProducingPageProps {
@@ -35,7 +35,8 @@ export const ProducingPage = (props: IProducingPageProps) => {
     audioTurnedOff,
     producerAppDataRef,
   } = useRTCToolsContextStore();
-  const [presentToast] = useIonToast();
+  
+    const {presentToast} = usePresentToast();
   const [showToolbar, setShowTaskbar] = useState(false);
 
   const requestPermissions = async () => {

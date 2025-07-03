@@ -18,6 +18,7 @@ import {
 } from "@ionic/react";
 import { APIBaseURL, postData } from "../../api/base";
 import { useHistory } from "react-router";
+import { usePresentToast } from "../../shared/helpers";
 
 export interface ICreateRoomProps {
   roomType?: "instant" | "scheduled";
@@ -25,6 +26,8 @@ export interface ICreateRoomProps {
 }
 
 export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
+  
+    const {presentToast} = usePresentToast();
   const [room, setRoom] = useState({} as IRoom);
   const [openEventDateOverlay, setOpenEventDateOverlay] = useState(false);
   const router = useHistory();
@@ -52,6 +55,7 @@ export const CreateRoom = ({ roomType, onSuccess }: ICreateRoomProps) => {
       window.location.href = `/conference/rooms`;
     } catch (error) {
       console.log("Error creating event room", (error as Error).message);
+      presentToast((error as Error).message, 4000);
     }
   };
   return (

@@ -15,6 +15,7 @@ import { APIBaseURL, postData } from "../../api/base";
 import { IAuthUserProfile, ILoginResponse } from "../../shared/interfaces/user";
 import { useAuthGuardContextStore } from "../../contexts/auth/AuthGuardContext";
 import { useAsyncHelpersContext } from "../../contexts/async-helpers";
+import { usePresentToast } from "../../shared/helpers";
 
 export interface IAuthUser {
   email?: string;
@@ -36,7 +37,7 @@ export const LoginOrRegister = ({ onSuccess }: ILoginOrCreateUserProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [usePhoneNumber, setUsePhoneNumber] = useState(false);
 
-  const [presentToast] = useIonToast();
+  const {presentToast} = usePresentToast();
   const { setIsLoggedIn } = useAuthGuardContextStore();
 
   const { setOpenAuthModal } = useAuthGuardContextStore();
@@ -70,7 +71,7 @@ export const LoginOrRegister = ({ onSuccess }: ILoginOrCreateUserProps) => {
       window.location.reload();
     } catch (error) {
       setLoading({ isLoading: false, loadingMessage: "" });
-      presentToast((error as Error).message, 3000);
+      presentToast((error as Error).message, 4000);
       console.log((error as Error).message, "Error signin or registring user");
     }
   };

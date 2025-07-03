@@ -14,7 +14,6 @@ import {
   IonSearchbar,
   IonText,
   useIonAlert,
-  useIonToast,
 } from "@ionic/react";
 import {
   ILoadingProps,
@@ -27,6 +26,7 @@ import { IAidService } from "../../shared/interfaces/aid-service.interface";
 import { closeCircle, ellipsisVertical, handLeft } from "ionicons/icons";
 import { IAuthUserProfile } from "../../shared/interfaces/user";
 import { EditUserProfile } from "./EditUserProfile";
+import { usePresentToast } from "../../shared/helpers";
 
 const UserItem = ({
   selectedUser,
@@ -35,7 +35,7 @@ const UserItem = ({
   selectedUser: IAuthUserProfile;
   aidServices: IAidService[];
 }) => {
-  const [presentToast] = useIonToast();
+  const {presentToast} = usePresentToast();
   const { setLoading } = useAsyncHelpersContext();
   const [page, setPage] = useState(0);
   const limit = 10;
